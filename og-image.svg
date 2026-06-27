@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0a8aa8"/>
+      <stop offset="100%" stop-color="#0d2538"/>
+    </linearGradient>
+    <linearGradient id="sand" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f5e6c8"/>
+      <stop offset="100%" stop-color="#e8c98a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#sky)"/>
+  <!-- Sun -->
+  <circle cx="950" cy="200" r="80" fill="#f5e6c8" opacity="0.85"/>
+  <!-- Ocean -->
+  <rect y="380" width="1200" height="180" fill="#075f74"/>
+  <rect y="430" width="1200" height="130" fill="#0a8aa8" opacity="0.6"/>
+  <!-- Beach line -->
+  <path d="M0 560 Q300 540 600 555 T1200 555 L1200 630 L0 630 Z" fill="url(#sand)"/>
+  <!-- Anchor -->
+  <g transform="translate(160, 280) scale(2.5)" fill="#f5e6c8">
+    <text x="0" y="0" font-family="Georgia, serif" font-size="60" font-weight="700">⚓</text>
+  </g>
+  <!-- Title -->
+  <text x="600" y="320" text-anchor="middle" font-family="Georgia, serif"
+        font-size="76" font-weight="700" fill="#ffffff">Bahamas Adventure Guides</text>
+  <text x="600" y="380" text-anchor="middle" font-family="Inter, sans-serif"
+        font-size="32" fill="#f5e6c8" font-weight="400">Private yachts, charters &amp; curated island experiences</text>
+  <!-- Bottom tag -->
+  <text x="600" y="600" text-anchor="middle" font-family="Inter, sans-serif"
+        font-size="20" fill="#0d2538" font-weight="600" letter-spacing="2">NASSAU · EXUMA · THE BAHAMAS</text>
+</svg>
