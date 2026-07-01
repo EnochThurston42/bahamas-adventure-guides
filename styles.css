@@ -88,6 +88,8 @@ h1, h2, h3, h4 {
 .btn-primary:hover { background: var(--c-navy); color: var(--c-white); transform: translateY(-1px); box-shadow: var(--shadow-md); }
 .btn-ghost { background: transparent; color: var(--c-white); border-color: rgba(255,255,255,0.5); }
 .btn-ghost:hover { background: rgba(255,255,255,0.12); color: var(--c-white); }
+.btn-text { background: transparent; color: rgba(255,255,255,0.8); border: none; padding: 0; font-weight: 500; font-size: 0.95rem; text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
+.btn-text:hover { color: var(--c-white); }
 .btn-outline { background: transparent; color: var(--c-ocean-deep); border-color: var(--c-ocean-deep); }
 .btn-outline:hover { background: var(--c-ocean-deep); color: var(--c-white); }
 .btn-sm { padding: 9px 18px; font-size: 0.85rem; }
@@ -788,3 +790,9 @@ h1, h2, h3, h4 {
 .faq-item summary::after { content: '+'; font-size: 1.3rem; color: #b8946e; transition: transform 0.2s; }
 .faq-item[open] summary::after { content: '−'; }
 .faq-item p { padding: 0 1.5rem 1.25rem; margin: 0; color: #4a5568; line-height: 1.6; font-size: 0.95rem; }
+
+/* Social proof ticker */
+.social-proof { background: #f0ece4; padding: 0.75rem 0; border-bottom: 1px solid #e5ddd0; }
+.social-proof p { font-size: 0.82rem; color: #6b5e4a; margin: 0; text-align: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sp-dot { display: inline-block; width: 6px; height: 6px; background: #25D366; border-radius: 50%; margin-right: 8px; vertical-align: middle; animation: sp-pulse 2s ease-in-out infinite; }
+@keyframes sp-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }

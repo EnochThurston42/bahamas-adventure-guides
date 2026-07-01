@@ -56,8 +56,15 @@
 .wc-detail strong { color: #0d2538; font-weight: 600; }
 .wc-loading { text-align: center; padding: 3rem; color: #999; }
 .wc-error { text-align: center; padding: 2rem; color: #c53030; }
+.wc-skeleton { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
+.sk-card { background: #fff; border-radius: 14px; height: 220px; position: relative; overflow: hidden; background: #e8e4dc; }
+.sk-shine { position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); animation: sk-shimmer 1.8s infinite; }
+@keyframes sk-shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 .weather-note { margin-top: 2rem; padding: 1rem 1.5rem; background: #fff; border-radius: 10px; font-size: 0.88rem; color: #666; text-align: center; box-shadow: 0 2px 8px rgba(13,37,56,0.04); }
 .weather-note strong { color: #0d2538; }
+.wc-cta { margin-top: 2rem; text-align: center; padding: 2.5rem; background: linear-gradient(135deg, #0d2538 0%, #1a4a6e 100%); border-radius: 14px; color: #fff; }
+.wc-cta h3 { font-family: 'Fraunces', serif; font-size: 1.5rem; margin: 0 0 0.5rem; color: #fff; }
+.wc-cta p { color: rgba(255,255,255,0.7); margin: 0 0 1.25rem; font-size: 0.95rem; }
 @media (max-width: 640px) {
   .weather-hero h1 { font-size: 2rem; }
   .weather-grid { grid-template-columns: 1fr; }
@@ -90,13 +97,28 @@
  </div>
  </section>
 
- <section class="weather-section">
+ <section class="weather-section" id="weather-section">
  <div class="container">
  <div class="weather-grid" id="weather-grid">
- <div class="wc-loading">Loading weather data...</div>
+ <div class="wc-skeleton" id="skeleton-grid">
+ <div class="sk-card"><div class="sk-shine"></div></div>
+ <div class="sk-card"><div class="sk-shine"></div></div>
+ <div class="sk-card"><div class="sk-shine"></div></div>
+ <div class="sk-card"><div class="sk-shine"></div></div>
+ <div class="sk-card"><div class="sk-shine"></div></div>
+ <div class="sk-card"><div class="sk-shine"></div></div>
+ <div class="sk-card"><div class="sk-shine"></div></div>
+ <div class="sk-card"><div class="sk-shine"></div></div>
+ </div>
  </div>
  <div class="weather-note">
  <strong>Heads up:</strong> Weather in the tropics changes fast. This data updates every 15 minutes. Always check with your captain before heading out — they know the local conditions best.
+ </div>
+
+ <div class="wc-cta">
+ <h3>Perfect weather? Let's go.</h3>
+ <p>Tell us your dates and we'll match you with the right captain for the conditions.</p>
+ <a href="/contact/" class="btn btn-primary btn-lg">Request a Quote</a>
  </div>
  </div>
  </section>
@@ -199,6 +221,14 @@ async function loadWeather() {
               <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#666" stroke-width="1.5"><path d="M10 2v3M10 15v3M2 10h3M15 10h3"/><circle cx="10" cy="10" r="2"/></svg>
               Feels like <strong>${cc.FeelsLikeC}°C</strong>
             </div>
+            <div class="wc-detail">
+              <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#666" stroke-width="1.5"><circle cx="10" cy="10" r="3"/><path d="M10 3v3M10 14v3M3 10h3M14 10h3"/></svg>
+              UV index <strong>${cc.uvIndex}</strong>
+            </div>
+            <div class="wc-detail">
+              <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#666" stroke-width="1.5"><path d="M10 2v16M2 10h16"/></svg>
+              Pressure <strong>${cc.pressure}</strong> hPa
+            </div>
           </div>
         </div>`;
     } catch (e) {
@@ -216,6 +246,7 @@ async function loadWeather() {
     }
   }
 
+  document.getElementById('skeleton-grid').style.display = 'none';
   grid.innerHTML = html;
 }
 
