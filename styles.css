@@ -198,8 +198,9 @@ h1, h2, h3, h4 {
   letter-spacing: 0;
   z-index: 3;
 }
-.primary-nav { display: flex; gap: 28px; }
-.primary-nav a { color: var(--c-ink); font-weight: 500; font-size: 0.92rem; }
+.primary-nav { display: flex; gap: 16px; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.primary-nav::-webkit-scrollbar { display: none; }
+.primary-nav a { color: var(--c-ink); font-weight: 500; font-size: 0.85rem; white-space: nowrap; }
 .primary-nav a:hover { color: var(--c-ocean-deep); }
 @media (max-width: 900px) { .primary-nav { display: none; } }
 
