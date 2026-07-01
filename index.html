@@ -24,15 +24,107 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  "name": "Bahamas Adventure Guides",
-  "description": "Curated Bahamas yacht charters, boat trips, jet ski rentals, dinner cruises, massage, and taxi services — all booked direct with local operators.",
-  "url": "https://bahamasadventureguides.com",
-  "areaServed": [
-    {"@type": "City", "name": "Nassau"},
-    {"@type": "State", "name": "The Bahamas"}
-  ],
-  "priceRange": "$$"
+  "@graph": [
+    {
+      "@type": "LocalBusiness",
+      "@id": "https://bahamasadventureguides.com",
+      "name": "Bahamas Adventure Guides",
+      "description": "Curated Bahamas yacht charters, boat trips, jet ski rentals, dinner cruises, massage, and taxi services — all booked direct with local operators.",
+      "url": "https://bahamasadventureguides.com",
+      "telephone": "+1-242-827-0994",
+      "areaServed": [
+        {"@type": "City", "name": "Nassau"},
+        {"@type": "State", "name": "The Bahamas"},
+        {"@type": "City", "name": "Exuma"}
+      ],
+      "priceRange": "$$",
+      "openingHours": "Mo-Su 07:00-17:00",
+      "image": "https://bahamasadventureguides.com/og-image.svg"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://bahamasadventureguides.com/breadcrumbs",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://bahamasadventureguides.com"},
+        {"@type": "ListItem", "position": 2, "name": "Yacht Charters", "item": "https://bahamasadventureguides.com/yachts/"},
+        {"@type": "ListItem", "position": 3, "name": "Boat Charters", "item": "https://bahamasadventureguides.com/boat-charters/"},
+        {"@type": "ListItem", "position": 4, "name": "Dinner Cruises", "item": "https://bahamasadventureguides.com/dinner-cruises/"},
+        {"@type": "ListItem", "position": 5, "name": "Jet Ski Rentals", "item": "https://bahamasadventureguides.com/jet-ski/"},
+        {"@type": "ListItem", "position": 6, "name": "Taxi Service", "item": "https://bahamasadventureguides.com/taxi/"},
+        {"@type": "ListItem", "position": 7, "name": "Massage", "item": "https://bahamasadventureguides.com/massage/"}
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://bahamasadventureguides.com/faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What types of boat rentals are available in Nassau?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yacht charters, private boat charters, dinner cruises, and jet ski rentals. Options range from half-day trips to full-day excursions including Exuma cays."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I book a Bahamas adventure?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Contact us through our website or WhatsApp. Tell us what you're looking for and we'll send a quote. No booking fees, no upfront payment required to reserve."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need to pay a deposit to book?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No deposit needed. Quotes are free and there are no booking fees. Payment is arranged directly with the operator."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What's included in a yacht charter?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Captain and crew, fuel, water toys, snorkel gear, and refreshments. Some charters include lunch. Customs fees for Exuma crossings are extra."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I visit the swimming pigs from Nassau?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Full-day boat charters to the Exuma cays include stops at Pig Beach, sandbars, and snorkel spots. These are popular and book out in advance."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How long are dinner cruises?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Most dinner cruises run 2 to 3 hours, departing in the late afternoon. Includes dinner, drinks, and live music or entertainment."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is transportation to the dock included?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Hotel pickup and drop-off can be arranged for most charters and excursions. Let us know where you're staying."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What's the best time of year for a Bahamas boat trip?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "November through April has the best weather — calm seas and comfortable temperatures. Summer is hotter but good for snorkeling."
+          }
+        }
+      ]
+    }
+  ]
 }
 </script>
 </head>
@@ -206,8 +298,44 @@
  </div>
  </section>
 
+ <!-- ========== FAQ ========== -->
+ <section class="faq">
+ <div class="container">
+ <header class="section-head">
+ <p class="eyebrow">Common questions</p>
+ <h2>Planning a Bahamas trip? Start here.</h2>
+ </header>
+ <div class="faq-grid">
+ <details class="faq-item">
+ <summary>What types of boat rentals are available in Nassau?</summary>
+ <p>Yacht charters, private boat charters, dinner cruises, and jet ski rentals. Options range from half-day trips to full-day excursions including the Exuma cays. Each listing shows exact capacity and what's included.</p>
+ </details>
+ <details class="faq-item">
+ <summary>How do I book?</summary>
+ <p>Contact us through the inquiry form or WhatsApp. Tell us what you want — date, group size, and the kind of experience you're after. We'll send back options and a quote within 24 hours. No booking fees.</p>
+ </details>
+ <details class="faq-item">
+ <summary>Do I need to pay a deposit?</summary>
+ <p>No deposit needed. Quotes are free. Payment is made directly with the operator once you confirm. We don't hold your money.</p>
+ </details>
+ <details class="faq-item">
+ <summary>Can I visit the swimming pigs from Nassau?</summary>
+ <p>Yes. Full-day charters to the Exuma cays include stops at Pig Beach, sandbars, and snorkeling spots. These trips book out early — give us at least a week's notice.</p>
+ </details>
+ <details class="faq-item">
+ <summary>Is hotel pickup included?</summary>
+ <p>Hotel pickup and drop-off can be arranged for most charters and excursions. Let us know where you're staying and we'll include it in the quote.</p>
+ </details>
+ <details class="faq-item">
+ <summary>What's the best time of year for a Bahamas boat trip?</summary>
+ <p>November through April has calm seas and comfortable temperatures. Summer (May–October) is hotter but water visibility is excellent for snorkeling. Year-round is possible.</p>
+ </details>
+ </div>
+ </div>
+ </section>
+
  <!-- ========== FOOTER ========== -->
- <footer class="site-footer">
+  <footer class="site-footer">
  <div class="container footer-inner">
  <div class="footer-brand">
  <span class="brand-mark">
