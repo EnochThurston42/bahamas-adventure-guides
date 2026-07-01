@@ -88,8 +88,7 @@ h1, h2, h3, h4 {
 .btn-primary:hover { background: var(--c-navy); color: var(--c-white); transform: translateY(-1px); box-shadow: var(--shadow-md); }
 .btn-ghost { background: transparent; color: var(--c-white); border-color: rgba(255,255,255,0.5); }
 .btn-ghost:hover { background: rgba(255,255,255,0.12); color: var(--c-white); }
-.btn-text { background: transparent; color: rgba(255,255,255,0.8); border: none; padding: 0; font-weight: 500; font-size: 0.95rem; text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
-.btn-text:hover { color: var(--c-white); }
+
 .btn-outline { background: transparent; color: var(--c-ocean-deep); border-color: var(--c-ocean-deep); }
 .btn-outline:hover { background: var(--c-ocean-deep); color: var(--c-white); }
 .btn-sm { padding: 9px 18px; font-size: 0.85rem; }
