@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Bahamas Weather — Live Conditions | Bahamas Adventure Guides</title>
+ <meta name="description" content="Live weather for Nassau, Exuma, Freeport, and all major Bahamian islands. Temperature, wind, humidity, and conditions — updated in real time.">
+ <meta name="keywords" content="Bahamas weather, Nassau weather, Exuma weather, Freeport weather, Bahamas forecast, tropical weather">
+ <link rel="canonical" href="https://bahamasadventureguides.com/weather/">
+ <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+ <link rel="preconnect" href="https://fonts.googleapis.com">
+ <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+ <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+ <link rel="stylesheet" href="/styles.css">
+ <meta property="og:title" content="Bahamas Weather — Live Conditions">
+ <meta property="og:description" content="Real-time weather for Nassau, Exuma, Freeport, and the Bahamas. Check conditions before you book.">
+ <meta property="og:url" content="https://bahamasadventureguides.com/weather/">
+ <meta property="og:image" content="https://bahamasadventureguides.com/og-image.svg">
+ <meta name="twitter:card" content="summary_large_image">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Bahamas Weather",
+  "description": "Live weather conditions for major Bahamian islands and tourist destinations.",
+  "about": {
+    "@type": "State",
+    "name": "The Bahamas"
+  }
+}
+</script>
+
+<style>
+.weather-hero {
+  background: linear-gradient(135deg, #0d2538 0%, #1a4a6e 50%, #2b6c9e 100%);
+  padding: 6rem 0 3rem;
+  text-align: center;
+  color: #fff;
+}
+.weather-hero h1 { font-size: 2.8rem; margin-bottom: 0.5rem; }
+.weather-hero .hero-sub { color: rgba(255,255,255,0.7); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+.weather-section { padding: 3rem 0 5rem; background: #f8f6f0; }
+.weather-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; margin-top: 2rem; }
+.weather-card { background: #fff; border-radius: 14px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(13,37,56,0.06); transition: transform 0.2s, box-shadow 0.2s; }
+.weather-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(13,37,56,0.1); }
+.wc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+.wc-city { font-size: 1.2rem; font-weight: 700; color: #0d2538; margin: 0; }
+.wc-region { font-size: 0.8rem; color: #b8946e; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+.wc-temp { font-size: 2.5rem; font-weight: 700; color: #0d2538; line-height: 1; }
+.wc-unit { font-size: 1.2rem; color: #999; font-weight: 400; }
+.wc-icon { font-size: 2.2rem; }
+.wc-desc { text-transform: capitalize; color: #4a5568; margin: 0.25rem 0 0.75rem; font-size: 0.95rem; }
+.wc-details { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+.wc-detail { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: #666; }
+.wc-detail strong { color: #0d2538; font-weight: 600; }
+.wc-loading { text-align: center; padding: 3rem; color: #999; }
+.wc-error { text-align: center; padding: 2rem; color: #c53030; }
+.weather-note { margin-top: 2rem; padding: 1rem 1.5rem; background: #fff; border-radius: 10px; font-size: 0.88rem; color: #666; text-align: center; box-shadow: 0 2px 8px rgba(13,37,56,0.04); }
+.weather-note strong { color: #0d2538; }
+@media (max-width: 640px) {
+  .weather-hero h1 { font-size: 2rem; }
+  .weather-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+ <header class="site-header">
+ <div class="container nav-inner">
+ <a href="/" class="brand"><span class="brand-mark">
+ <span class="compass-ring"></span>
+ <span class="compass-needle"></span>
+ <span class="compass-dot"></span>
+ <span class="compass-n">N</span>
+ </span><span class="brand-text">Bahamas Adventure Guides</span></a>
+ <nav class="primary-nav" aria-label="Primary">
+ <a href="/yachts/">Yachts</a><a href="/boat-charters/">Boat Charters</a><a href="/dinner-cruises/">Dinner Cruises</a>
+ <a href="/taxi/">Taxi</a><a href="/massage/">Massage</a><a href="/jet-ski/">Jet Ski</a><a href="/weather/" class="active">Weather</a><a href="/weather/">Weather</a><a href="/about/">About</a>
+ </nav>
+ <a href="/contact/" class="btn btn-primary btn-sm">Inquire</a>
+ </div>
+ </header>
+
+ <section class="weather-hero">
+ <div class="container">
+ <p class="eyebrow" style="color:rgba(255,255,255,0.6)">Plan around the weather</p>
+ <h1>Bahamas Weather</h1>
+ <p class="hero-sub">Live conditions for the islands you want to visit. Updated every 15 minutes.</p>
+ </div>
+ </section>
+
+ <section class="weather-section">
+ <div class="container">
+ <div class="weather-grid" id="weather-grid">
+ <div class="wc-loading">Loading weather data...</div>
+ </div>
+ <div class="weather-note">
+ <strong>Heads up:</strong> Weather in the tropics changes fast. This data updates every 15 minutes. Always check with your captain before heading out — they know the local conditions best.
+ </div>
+ </div>
+ </section>
+
+ <footer class="site-footer">
+ <div class="container footer-inner">
+ <div class="footer-brand">
+ <span class="brand-mark">
+ <span class="compass-ring"></span>
+ <span class="compass-needle"></span>
+ <span class="compass-dot"></span>
+ <span class="compass-n">N</span>
+ </span>
+ <span class="brand-text">Bahamas Adventure Guides</span>
+ <p class="footer-tag">Curated Bahamas experiences · Nassau · Exuma</p>
+ </div>
+ <div class="footer-links">
+ <div>
+ <h4>Experiences</h4>
+ <a href="/yachts/">Yachts</a><a href="/boat-charters/">Boat Charters</a><a href="/dinner-cruises/">Dinner Cruises</a>
+ <a href="/jet-ski/">Jet Ski</a><a href="/weather/">Weather</a><a href="/taxi/">Taxi & Tours</a><a href="/massage/">Massage</a>
+ </div>
+ <div>
+ <h4>Company</h4>
+ <a href="/weather/">Weather</a><a href="/about/">About</a><a href="/contact/">Contact</a>
+ <a href="mailto:inquire@bahamasadventureguides.com">inquire@bahamasadventureguides.com</a>
+ </div>
+ </div>
+ <p class="footer-fine">© 2026 Bahamas Adventure Guides · All bookings handled by licensed Bahamian operators.</p>
+ </div>
+ </footer>
+
+<script>
+const locations = [
+  { name: 'Nassau', region: 'New Providence', query: 'Nassau' },
+  { name: 'Freeport', region: 'Grand Bahama', query: 'Freeport' },
+  { name: 'George Town', region: 'Exuma', query: 'George+Town+Bahamas' },
+  { name: 'Governor\'s Harbour', region: 'Eleuthera', query: "Governor's+Harbour" },
+  { name: 'Marsh Harbour', region: 'Abaco', query: 'Marsh+Harbour' },
+  { name: 'Andros Town', region: 'Andros', query: 'Andros+Town' },
+  { name: 'Alice Town', region: 'Bimini', query: 'Alice+Town+Bimini' },
+  { name: 'Matthew Town', region: 'Inagua', query: 'Matthew+Town' }
+];
+
+function getWeatherClass(desc) {
+  const d = desc.toLowerCase();
+  if (d.includes('sunny') || d.includes('clear')) return 'sunny';
+  if (d.includes('partly')) return 'partly';
+  if (d.includes('cloudy') || d.includes('overcast')) return 'cloudy';
+  if (d.includes('thunder') || d.includes('storm')) return 'storm';
+  if (d.includes('rain') || d.includes('drizzle') || d.includes('shower')) return 'rain';
+  if (d.includes('fog') || d.includes('mist') || d.includes('haze')) return 'fog';
+  return 'default';
+}
+
+async function loadWeather() {
+  const grid = document.getElementById('weather-grid');
+  let html = '';
+
+  for (const loc of locations) {
+    try {
+      const res = await fetch(`https://api.wttr.in/${loc.query}?format=j1`);
+      if (!res.ok) throw new Error('Failed');
+      const data = await res.json();
+      const cc = data.current_condition[0];
+      const desc = cc.weatherDesc[0].value;
+      const wc = getWeatherClass(desc);
+
+      html += `
+        <div class="weather-card">
+          <div class="wc-header">
+            <div>
+              <h3 class="wc-city">${loc.name}</h3>
+              <span class="wc-region">${loc.region}</span>
+            </div>
+            <svg class="wc-svg wc-${wc}" viewBox="0 0 48 48" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="24" cy="18" r="6" stroke-width="2"/>
+              <path d="M24 8V4M24 32v-4M14 18h-4M38 18h-4M16.5 10.5l-2-2M33.5 25.5l2 2M33.5 10.5l2-2M16.5 25.5l-2 2"/>
+              <path d="M32 26a8 8 0 01-16 0" stroke-width="1.5" opacity="${wc === 'cloudy' || wc === 'partly' ? '1' : '0.3'}"/>
+              <path d="M20 30l-2 6M28 30l2 6M23 36l-1 4M25 36l1 4" stroke-width="1" opacity="${wc === 'rain' ? '1' : '0'}"/>
+              <path d="M12 30l6-2M36 30l-6-2" stroke-width="1.5" opacity="${wc === 'fog' || wc === 'cloudy' ? '0.5' : '0'}"/>
+            </svg>
+          </div>
+          <div class="wc-temp">${cc.temp_C}<span class="wc-unit">°C</span></div>
+          <div class="wc-desc">${desc}</div>
+          <div class="wc-details">
+            <div class="wc-detail">
+              <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#666" stroke-width="1.5"><path d="M10 2v16M2 10h16"/></svg>
+              <strong>${cc.windspeedKmph}</strong> km/h wind
+            </div>
+            <div class="wc-detail">
+              <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#666" stroke-width="1.5"><path d="M4 14s2-3 6-3 6 3 6 3"/><circle cx="10" cy="6" r="2"/></svg>
+              <strong>${cc.humidity}</strong>% humidity
+            </div>
+            <div class="wc-detail">
+              <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#666" stroke-width="1.5"><circle cx="10" cy="10" r="8"/><circle cx="10" cy="10" r="3"/></svg>
+              <strong>${cc.visibility}</strong> km
+            </div>
+            <div class="wc-detail">
+              <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#666" stroke-width="1.5"><path d="M10 2v3M10 15v3M2 10h3M15 10h3"/><circle cx="10" cy="10" r="2"/></svg>
+              Feels like <strong>${cc.FeelsLikeC}°C</strong>
+            </div>
+          </div>
+        </div>`;
+    } catch (e) {
+      html += `
+        <div class="weather-card">
+          <div class="wc-header">
+            <div>
+              <h3 class="wc-city">${loc.name}</h3>
+              <span class="wc-region">${loc.region}</span>
+            </div>
+            <svg viewBox="0 0 20 20" width="24" height="24" fill="none" stroke="#c53030" stroke-width="1.5"><circle cx="10" cy="10" r="8"/><path d="M10 6v4M10 13v1"/></svg>
+          </div>
+          <div class="wc-error">Could not load conditions. Try again later.</div>
+        </div>`;
+    }
+  }
+
+  grid.innerHTML = html;
+}
+
+loadWeather();
+setInterval(loadWeather, 900000);
+</script>
+</body>
+</html>
