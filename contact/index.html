@@ -127,7 +127,30 @@
  <div class="sidebar-card">
  <h3>Prefer to chat?</h3>
  <p>Open the chat widget and tell us what you need. Same fast response.</p>
- <button class="btn btn-primary" onclick="(function f(){var b=document.getElementById('bagh-chat-btn');var p=document.getElementById('bagh-chat-panel');if(b&&p){b.click();}else{setTimeout(f,100);}})()" style="width:100%;background:#e8c98a;color:#0d2538;">Open Live Chat</button>
+ <button class="btn btn-primary" id="page-open-chat-btn" style="width:100%;background:#e8c98a;color:#0d2538;">Open Live Chat</button>
+ <script>
+ (function(){
+   var btn = document.getElementById('page-open-chat-btn');
+   if(!btn) return;
+   btn.onclick = function(){
+     var chatBtn = document.getElementById('bagh-chat-btn');
+     var panel = document.getElementById('bagh-chat-panel');
+     if(chatBtn && panel){
+       chatBtn.click();
+     } else {
+       // Create minimal chat UI fallback if widget isnt loaded
+       if(!panel){
+         panel = document.createElement('div');
+         panel.id = 'bagh-chat-panel';
+         panel.innerHTML = '<div style=\"background:#075f74;color:#fff;padding:12px 20px;border-radius:16px 16px 0 0;\">Bahamas Adventure Guides</div><div style=\"padding:40px 20px;text-align:center;color:#888;\">Chat loading. If this persists, refresh the page.</div>';
+         panel.style.cssText = 'position:fixed;bottom:96px;right:24px;width:360px;height:200px;background:#fff;border-radius:16px;box-shadow:0 12px 48px rgba(0,0,0,0.2);z-index:9998;display:flex;flex-direction:column;';
+         document.body.appendChild(panel);
+         setTimeout(function(){ panel.remove(); }, 5000);
+       }
+     }
+   };
+ })();
+ </script>
  </div>
  </aside>
  </div>
