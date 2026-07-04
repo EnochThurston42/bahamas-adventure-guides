@@ -262,7 +262,7 @@ h1, h2, h3, h4 {
   background-size: cover; background-position: center;
   background-color: var(--c-sand);
 }
-.exp-img--yacht   { background-image: url('/images/yacht-01.jpg'); }
+.exp-img--yacht   { background-image: url('/images/clicquot-01.jpg'); }
 .exp-img--boat    { background-image: url('https://images.pexels.com/photos/10344325/pexels-photo-10344325.jpeg?auto=compress&cs=tinysrgb&w=900'); }
 .exp-img--dinner  { background-image: url('https://images.pexels.com/photos/12625327/pexels-photo-12625327.jpeg?auto=compress&cs=tinysrgb&w=900'); }
 .exp-img--jetski  { background-image: url('https://images.pexels.com/photos/15414980/pexels-photo-15414980.jpeg?auto=compress&cs=tinysrgb&w=900'); }
@@ -342,7 +342,7 @@ h1, h2, h3, h4 {
 .page-hero--yachts {
   background-image:
     linear-gradient(135deg, rgba(13, 37, 56, 0.6), rgba(10, 138, 168, 0.3)),
-    url('/images/yacht-01.jpg');
+    url('/images/clicquot-01.jpg');
 }
 .page-hero .hero-content { max-width: 720px; }
 
@@ -370,9 +370,9 @@ h1, h2, h3, h4 {
   background: linear-gradient(90deg, var(--c-ocean-deep), var(--c-ocean));
 }
 .package-img { aspect-ratio: 4 / 3; background-size: cover; background-position: center; }
-.package-img--sunset   { background-image: url('/images/yacht-02.jpg'); }
-.package-img--fullday  { background-image: url('/images/yacht-03.jpg'); }
-.package-img--islandhop { background-image: url('/images/yacht-04.jpg'); }
+.package-img--sunset   { background-image: url('/images/clicquot-02.jpg'); }
+.package-img--fullday  { background-image: url('/images/clicquot-03.jpg'); }
+.package-img--islandhop { background-image: url('/images/clicquot-04.jpg'); }
 .package-body { padding: 28px; display: flex; flex-direction: column; flex-grow: 1; }
 .package-tag {
   display: inline-block;
