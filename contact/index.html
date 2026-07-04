@@ -61,7 +61,7 @@
  </p>
 
  <div class="hero-cta" style="justify-content: center;">
- <button class="btn btn-primary btn-lg" onclick="if(window.baghOpenChat)baghOpenChat();">Open Chat Now</button>
+ <button class="btn btn-primary btn-lg" onclick="var bi=setInterval(function(){if(window.baghOpenChat){clearInterval(bi);baghOpenChat();}},50);setTimeout(function(){clearInterval(bi)},3000);" style="background:#e8c98a;color:#0d2538;">Open Chat Now</button>
  </div>
 
  <p style="margin-top: 32px; font-size: 0.9rem; color: #888;">
@@ -75,7 +75,7 @@
  <div class="container cta-inner">
  <h2>Already know what you want?</h2>
  <p>Open the chat, paste your plans, and get a quote within hours — not days.</p>
- <button class="btn btn-primary btn-lg" onclick="if(window.baghOpenChat)baghOpenChat();">Open Chat</button>
+ <button class="btn btn-primary btn-lg" onclick="var bi=setInterval(function(){if(window.baghOpenChat){clearInterval(bi);baghOpenChat();}},50);setTimeout(function(){clearInterval(bi)},3000);" style="background:#e8c98a;color:#0d2538;">Open Chat</button>
  </div>
  </section>
 

@@ -474,13 +474,16 @@ const WIDGET_JS = `
   fileInput.style.display = 'none';
   document.body.appendChild(fileInput);
 
-  // Global open function for site buttons to call reliably
+  // Global open function for site buttons — works immediately or with queuing
   window.baghOpenChat = function() {
-    if (!panel) return;
-    panel.classList.add('open');
-    btn.classList.remove('bagh-has-unread');
-    if (state.roomId) loadHistory();
+    if (panel) {
+      panel.classList.add('open');
+      btn.classList.remove('bagh-has-unread');
+      if (state.roomId) loadHistory();
+    }
   };
+  // Also set a flag so buttons can check readiness
+  window.baghChatReady = true;
 
   btn.onclick = () => {
     panel.classList.toggle('open');
