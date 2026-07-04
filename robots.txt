@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /thank-you/
 
-Sitemap: https://bahamasadventureguides.com/sitemap.xml
+Sitemap: https://bahamas-adventure-guides.pages.dev/sitemap.xml
