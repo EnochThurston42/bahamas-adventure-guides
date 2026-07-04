@@ -1065,14 +1065,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     try {
       const r = await fetch(API + '/api/messages/' + activeRoom);
       const d = await r.json();
-      // Merge: keep local messages, add any from server that we dont have
-      const serverIds = new Set(localMessages.map(m => m.id));
-      for (const m of (d.messages || [])) {
-        if (!serverIds.has(m.id)) {
-          localMessages.push(m);
-        }
-      }
-      localMessages.sort((a, b) => (a.id || 0) - (b.id || 0));
+      // Replace local messages with REST data (source of truth)
+      // Local messages might have Guest name from WS broadcasts
+      localMessages = (d.messages || []).map(function(m) {
+        return {
+          id: m.id,
+          sender_role: m.sender_role,
+          sender_name: m.sender_name || 'Visitor',
+          content: m.content,
+          file_url: m.file_url,
+          file_type: m.file_type,
+          file_name: m.file_name,
+          created_at: m.created_at,
+        };
+      });
       renderLocalMsgs();
     } catch {}
   }
@@ -1110,17 +1116,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     ws.onmessage = (e) => {
       const data = JSON.parse(e.data);
       if (data.type === 'message' && data.sender_role === 'visitor') {
-        // Incoming visitor message - add to local if not already there
-        if (!localMessages.find(m => m.id === data.id)) {
-          localMessages.push({
-            id: data.id || Date.now(),
-            sender_role: 'visitor',
-            sender_name: data.sender_name || 'Visitor',
-            content: data.content,
-            created_at: data.created_at,
-          });
-          renderLocalMsgs();
-        }
+        // Trigger REST reload to get correct sender_name from server
+        loadMsgs();
       }
     };
     ws.onclose = () => { delete wsConnections[roomId]; };

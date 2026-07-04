@@ -46,7 +46,7 @@
     '.bagh-dot--offline { background:#bbb;box-shadow:none; }',
     '.bagh-close { position:absolute;top:16px;right:20px;background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;opacity:0.7;transition:opacity 0.2s; }',
     '.bagh-close:hover { opacity:1; }',
-    '.bagh-msgs { flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px;background:#f9f8f5;scrollbar-width:thin;scrollbar-color:#0a8aa8 #f9f8f5; }',
+    '.bagh-msgs { flex:1;min-height:0;overflow-y:scroll;padding:20px;display:flex;flex-direction:column;gap:12px;background:#f9f8f5;scrollbar-width:thin;scrollbar-color:#0a8aa8 #f9f8f5; }',
     '.bagh-msgs::-webkit-scrollbar { width:8px; }',
     '.bagh-msgs::-webkit-scrollbar-track { background:transparent; }',
     '.bagh-msgs::-webkit-scrollbar-thumb { background-color:#0a8aa8;border-radius:4px; }',
@@ -86,7 +86,7 @@
   chat.innerHTML = [
     '<button id="bagh-chat-btn" aria-label="Chat"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg></button>',
     '<div id="bagh-chat-panel">',
-    '<div class="bagh-hdr"><h3>Bahamas Adventure Guides</h3><p>Ask us anything</p><div class="bagh-status" id="bagh-status"><span class="bagh-dot bagh-dot--offline" id="bagh-dot"></span><span id="bagh-status-text">Reply within minutes</span></div><button id="bagh-clear-btn" class="bagh-close" style="right:auto;left:20px;font-size:0.82rem;opacity:0.8;">Clear</button><button class="bagh-close" id="bagh-close">&times;</button></div>',
+    '<div class="bagh-hdr"><h3>Bahamas Adventure Guides</h3><p>Ask us anything</p><div class="bagh-status" id="bagh-status"><span class="bagh-dot bagh-dot--offline" id="bagh-dot"></span><span id="bagh-status-text">Reply within minutes</span></div><button id="bagh-clear-btn" style="background:none;border:none;color:#fff;font-size:0.75rem;opacity:0.7;cursor:pointer;position:absolute;bottom:12px;left:20px;padding:4px 8px;border-radius:4px;">Clear</button><button class="bagh-close" id="bagh-close">&times;</button></div>',
     '<div id="bagh-form" class="bagh-form"><h3>Start chatting</h3><p>Leave your name and we\'ll be right with you.</p><input type="text" id="bagh-name" placeholder="Your name" maxlength="100" /><button id="bagh-start">Start Chat</button></div>',
     '<div id="bagh-loading" class="bagh-loading" style="display:none">Connecting...</div>',
     '<div id="bagh-chat-view" style="display:none;flex-direction:column;flex:1"><div class="bagh-msgs" id="bagh-msgs"></div><div class="bagh-input"><button class="bagh-ico-btn" id="bagh-file-btn" title="Attach file">File</button><textarea id="bagh-input" placeholder="Type..." rows="1"></textarea><button class="bagh-ico-btn" id="bagh-loc-btn" title="Share location">Map</button><button id="bagh-send">Send</button></div></div>',
@@ -436,13 +436,10 @@
     input.value = '';
     addMsg('visitor', 'You', text);
     try {
-      await fetch(API + '/api/send/' + state.roomId, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: 'visitor', name: state.visitorName, content: text }),
-      });
-      if (state.connected && state.ws) {
-        state.ws.send(JSON.stringify({ type: 'message', content: text }));
-      }
+        await fetch(API + '/api/send/' + state.roomId, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role: 'visitor', name: state.visitorName, content: text }),
+        });
     } catch {}
   }
 
