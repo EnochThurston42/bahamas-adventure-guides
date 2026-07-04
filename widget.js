@@ -295,37 +295,106 @@
     renderMsgs();
   }
 
+  function formatTime(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) {
+      var t = new Date();
+      var parts = iso.split(':'); 
+      if (parts.length >= 2) {
+        t.setHours(parseInt(parts[0]) || 0);
+        t.setMinutes(parseInt(parts[1]) || 0);
+      }
+      d = t;
+    }
+    var h = d.getHours(), m = d.getMinutes();
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
+  }
+
   function renderMsgs() {
     msgs.innerHTML = '';
     for (const m of state.messages) {
-      const el = document.createElement('div');
-      el.className = 'bagh-msg bagh-msg--' + (m.sender_role === 'visitor' ? 'visitor' : 'agent');
+      var isVis = m.sender_role === 'visitor';
+      var name = m.sender_name || (isVis ? 'You' : 'Agent');
+
+      // Sender name
+      if (name && name !== 'system') {
+        var nm = document.createElement('div');
+        nm.textContent = name;
+        nm.style.cssText = 'font-size:0.72rem;opacity:0.6;margin-bottom:3px;padding:0 4px;';
+        nm.style.textAlign = isVis ? 'left' : 'right';
+        msgs.appendChild(nm);
+      }
+
+      var el = document.createElement('div');
+      el.className = 'bagh-msg bagh-msg--' + (isVis ? 'visitor' : 'agent');
+
+      // Message content
+      var clean = m.content;
+      // Strip coordinate patterns from display if a map will be shown
+      var hasCoord = /(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/.test(clean);
+      if (hasCoord) {
+        clean = clean.replace(/(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/, '');
+        clean = clean.trim() || 'Shared a location';
+      }
       
-      const textEl = document.createElement('div');
-      textEl.textContent = m.content;
+      var textEl = document.createElement('div');
+      textEl.textContent = clean;
       el.appendChild(textEl);
 
-      // Location map preview
-      const loc = extractLocation(m.content);
-      if (loc) {
-        renderLocationMap(el, loc);
+      // Timestamp
+      var tm = m.created_at || '';
+      if (tm) {
+        var timeEl = document.createElement('div');
+        timeEl.textContent = formatTime(tm);
+        timeEl.style.cssText = 'font-size:0.65rem;opacity:0.5;margin-top:4px;text-align:right;';
+        el.appendChild(timeEl);
+      }
+
+      // Location map - only for coordinate messages
+      var loc = extractLocation(m.content);
+      if (loc && loc.lat) {
+        var mapWrap = document.createElement('div');
+        mapWrap.style.cssText = 'margin-top:8px;border-radius:10px;overflow:hidden;';
+        var mapLabel = document.createElement('div');
+        mapLabel.textContent = 'Location: ' + loc.lat.toFixed(4) + ', ' + loc.lng.toFixed(4);
+        mapLabel.style.cssText = 'font-size:0.7rem;color:#888;margin-bottom:4px;text-align:center;';
+        mapWrap.appendChild(mapLabel);
+        
+        var mapUrl = 'https://www.openstreetmap.org/export/embed.html?bbox=' + (loc.lng - 0.01) + ',' + (loc.lat - 0.01) + ',' + (loc.lng + 0.01) + ',' + (loc.lat + 0.01) + '&layer=mapnik&marker=' + loc.lat + ',' + loc.lng;
+        var iframe = document.createElement('iframe');
+        iframe.src = mapUrl;
+        iframe.style.cssText = 'width:100%;height:180px;border:0;display:block;border-radius:8px;';
+        iframe.loading = 'lazy';
+        mapWrap.appendChild(iframe);
+        
+        var viewLink = document.createElement('a');
+        viewLink.href = 'https://www.openstreetmap.org/?mlat=' + loc.lat + '&mlon=' + loc.lng;
+        viewLink.target = '_blank';
+        viewLink.textContent = 'Open in maps';
+        viewLink.style.cssText = 'display:block;font-size:0.7rem;color:#0a8aa8;margin-top:4px;text-align:center;text-decoration:underline;';
+        mapWrap.appendChild(viewLink);
+        
+        el.appendChild(mapWrap);
       }
 
       // File preview
       if (m.file_url) {
         if (m.file_type && m.file_type.startsWith('image/')) {
-          const img = document.createElement('img');
+          var img = document.createElement('img');
           img.className = 'bagh-img';
           img.src = m.file_url;
           img.alt = m.file_name || 'Image';
           img.loading = 'lazy';
           el.appendChild(img);
         } else {
-          const link = document.createElement('a');
+          var link = document.createElement('a');
           link.className = 'bagh-file-link';
           link.href = m.file_url;
           link.target = '_blank';
-          link.textContent = ' ' + (m.file_name || 'View file');
+          link.textContent = m.file_name || 'View file';
           el.appendChild(link);
         }
       }
