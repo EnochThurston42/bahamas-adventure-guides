@@ -382,6 +382,7 @@ export default {
 const WIDGET_JS = `
 (function() {
   'use strict';
+  try {
 
   const API = '';
   const ROOM_META_KEY = 'bagh_chat_room';
@@ -399,10 +400,11 @@ const WIDGET_JS = `
     typingTimer: null,
   };
 
-  const statusDot = document.getElementById('bagh-dot');
-  const statusText = document.getElementById('bagh-status-text');
+  var statusDot;
+  var statusText;
 
   function setOnline(online) {
+    if (!statusDot || !statusText) return;
     statusDot.className = 'bagh-dot' + (online ? '' : ' bagh-dot--offline');
     statusText.textContent = online ? "We're online" : "Away - we will reply when back";
   }
@@ -446,7 +448,7 @@ const WIDGET_JS = `
     '.bagh-form input { padding: 10px 14px; border: 1px solid #ddd; border-radius: 10px; font-size: 0.9rem; outline: none; }',
     '.bagh-form button { background: #075f74; color: #fff; border: none; border-radius: 10px; padding: 12px; cursor: pointer; font-weight: 600; }',
 '.bagh-form button:hover { background: #0d2538; }',
-    '.bagh-loading { display: flex; align-items: center; justify-content: center; flex: 1; color: #888; font-size: 0.9rem; } .bagh-loading::after { content: ''; width: 16px; height: 16px; margin-left: 8px; border: 2px solid #ddd; border-top-color: #075f74; border-radius: 50%; animation: bagh-spin 0.6s linear infinite; } @keyframes bagh-spin { to { transform: rotate(360deg); } }',
+    '.bagh-loading { display: flex; align-items: center; justify-content: center; flex: 1; color: #888; font-size: 0.9rem; } .bagh-loading::after { content: ""; width: 16px; height: 16px; margin-left: 8px; border: 2px solid #ddd; border-top-color: #075f74; border-radius: 50%; animation: bagh-spin 0.6s linear infinite; } @keyframes bagh-spin { to { transform: rotate(360deg); } }',
     '@media (max-width: 480px) { #bagh-chat-panel { width: 100vw; height: 100vh; bottom: 0; right: 0; border-radius: 0; max-height: none; } #bagh-chat-btn { bottom: 16px; right: 16px; width: 54px; height: 54px; } }'
   ].join(' ');
   document.head.appendChild(style);
@@ -464,6 +466,8 @@ const WIDGET_JS = `
   ].join('');
   document.body.appendChild(chat);
 
+  statusDot = document.getElementById('bagh-dot');
+  statusText = document.getElementById('bagh-status-text');
   const btn = document.getElementById('bagh-chat-btn');
   const panel = document.getElementById('bagh-chat-panel');
   const form = document.getElementById('bagh-form');
@@ -812,6 +816,9 @@ const WIDGET_JS = `
     chatView.style.display = 'flex';
     loading.style.display = 'none';
     loadHistory();
+  }
+  } catch(e) {
+    document.body.innerHTML += '<div style="position:fixed;top:0;left:0;right:0;background:red;color:#fff;padding:10px;z-index:99999;text-align:center;">Chat error: ' + e.message + '</div>';
   }
 })();
 `;
