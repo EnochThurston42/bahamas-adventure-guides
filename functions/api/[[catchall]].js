@@ -1,4 +1,3 @@
-// Proxy API + WebSocket requests to the chat worker
 const WORKER_URL = 'https://bahamas-chat-worker.117shadowwalker117.workers.dev';
 
 export async function onRequest(context) {
@@ -6,7 +5,6 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   const proxyUrl = WORKER_URL + url.pathname + url.search;
 
-  // Forward the request to the worker with all original headers
   const proxyRequest = new Request(proxyUrl, {
     method: request.method,
     headers: request.headers,
