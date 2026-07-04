@@ -1,0 +1,28 @@
+name = "bahamas-chat-worker"
+main = "src/index.mjs"
+compatibility_date = "2026-07-04"
+compatibility_flags = ["nodejs_compat"]
+
+# Durable Objects — one ChatRoom per conversation, one global ChatRegistry
+[[durable_objects.bindings]]
+name = "CHAT_ROOM"
+class_name = "ChatRoom"
+
+[[durable_objects.bindings]]
+name = "CHAT_REGISTRY"
+class_name = "ChatRegistry"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ChatRoom", "ChatRegistry"]
+
+# Environment variables for agent auth
+[vars]
+AGENT_USERNAME = "admin"
+AGENT_PASSWORD = ""
+AGENT_TOKEN = ""
+AGENT_NAME = "Adventure Guide Agent"
+
+# Deploy as a Worker that routes on the pages.dev subdomain
+[env.production]
+routes = [{ pattern = "chat.bahamas-adventure-guides.pages.dev/*", zone_id = "" }]
