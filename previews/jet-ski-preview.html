@@ -17,7 +17,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  
 
 <style>
 /* ============================================
@@ -501,20 +500,6 @@ h1, h2, h3, h4 {
   .sidebar-card h3 { font-size: 1.1rem; margin: 0 0 10px; }
   .sidebar-card p { font-size: 0.92rem; color: var(--c-muted); margin: 0 0 16px; }
 
-  .btn-whatsapp {
-    display: inline-flex; align-items: center; gap: 10px;
-    background: #25D366;
-    color: #ffffff;
-    padding: 12px 22px;
-    border-radius: 999px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    text-decoration: none;
-    transition: all 0.2s;
-    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
-  }
-  .btn-whatsapp:hover { background: #1ebe5d; color: #fff; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(37, 211, 102, 0.4); }
-
   .next-steps { list-style: none; padding: 0; margin: 0; counter-reset: next; }
   .next-steps li {
     position: relative;
@@ -576,7 +561,7 @@ h1, h2, h3, h4 {
   }
   .thanks-card h3 { margin: 0 0 8px; font-size: 1.3rem; }
   .thanks-card p { margin: 0 0 20px; color: var(--c-muted); font-size: 0.95rem; }
-  .thanks-card .btn-whatsapp { width: 100%; justify-content: center; }
+  .thanks-card 
 
   .thanks-next h3 { font-size: 1rem; text-transform: uppercase; letter-spacing: 0.16em; font-family: var(--font-body); color: var(--c-ocean-deep); margin: 0 0 20px; font-weight: 600; }
   .thanks-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 40px; }
@@ -731,8 +716,7 @@ h1, h2, h3, h4 {
       <p class="hero-sub">Solo rentals and guided jet ski tours — Cable Beach, Athol Island, Rose Island, and the sandbars in between. Newer-model skis, full safety briefing included.</p>
       <div class="hero-cta">
         <a href="/contact/" class="btn btn-primary">Request a Quote</a>
-        <a href="https://wa.me/12428133592?text=Hi%20Jason!%20I%27m%20interested%20in%20a%20Bahamas%20adventure%20from%20the%20Adventure%20Guides%20website.%20Can%20you%20help%20me%20plan%3F" target="_blank" rel="noopener" class="btn btn-ghost">Chat on WhatsApp</a>
-      </div>
+        </div>
     </div>
   </section>
   <section class="trust-strip">
@@ -830,125 +814,7 @@ h1, h2, h3, h4 {
     </div>
   </footer>
 <!-- ============================================================
-     Bahamas Adventure Guides — Floating WhatsApp Button
-     Inject before </body> on every page.
-     Edit JASON_PHONE, JASON_NAME, PAGE_CONTEXT as needed.
-     ============================================================ -->
-<a id="bagh-whatsapp"
-   class="bagh-whatsapp"
-   href="https://wa.me/12428133592?text=Hi%20Jason!%20I%27m%20interested%20in%20a%20Bahamas%20adventure%20from%20the%20Adventure%20Guides%20website.%20Can%20you%20help%20me%20plan%3F"
-   target="_blank"
-   rel="noopener"
-   aria-label="Chat with Jason on WhatsApp">
-  <svg class="bagh-wa-icon" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <path fill="currentColor" d="M19.11 17.205c-.372 0-1.088 1.39-1.518 1.39a.63.63 0 0 1-.315-.1c-.802-.402-1.504-.817-2.163-1.447-.545-.516-1.146-1.29-1.46-1.963a.426.426 0 0 1-.073-.215c0-.33.99-.945.99-1.49 0-.143-.73-2.09-.832-2.335-.143-.372-.214-.487-.6-.487-.187 0-.36-.043-.53-.043-.302 0-.53.115-.746.315-.688.645-1.032 1.318-1.06 2.264v.114c-.015.99.472 1.977 1.017 2.78 1.23 1.82 2.506 3.41 4.554 4.34.616.287 2.035.99 2.722.99.918 0 2.18-.512 2.564-1.39.13-.302.187-.617.144-.947-.058-.502-.387-.81-.96-1.075z"/>
-    <path fill="currentColor" d="M26.576 5.363c-7.42-7.43-19.42-7.434-26.847-.013-6.928 6.93-7.246 17.624-1.058 24.97L0 32l6.84-1.79c7.345 4.02 16.327 3.087 22.31-2.9 7.394-7.4 7.39-19.418-.006-26.825l-.568-.122zM16.05 28.34c-2.385 0-4.715-.64-6.747-1.85l-.484-.286-4.06 1.06 1.083-3.96-.315-.504a13.343 13.343 0 0 1-2.043-7.05c.002-7.395 6.018-13.41 13.412-13.41 3.583.002 6.95 1.397 9.484 3.93 2.532 2.535 3.928 5.905 3.927 9.49-.003 7.398-6.018 13.412-13.405 13.412l-.852.167z"/>
-  </svg>
-  <span class="bagh-wa-tooltip">Chat with Jason</span>
-  <span class="bagh-wa-pulse"></span>
-</a>
-
-<style>
-  /* ============================================================
-     Floating WhatsApp Button — Bahamas Adventure Guides
-     Brand color: WhatsApp Green #25D366
-     ============================================================ */
-  .bagh-whatsapp {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    z-index: 9999;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: #25D366;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 6px 18px rgba(37, 211, 102, 0.4),
-                0 2px 6px rgba(13, 37, 56, 0.15);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-    text-decoration: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .bagh-whatsapp:hover,
-  .bagh-whatsapp:focus-visible {
-    background: #1ebe5d;
-    transform: scale(1.08);
-    box-shadow: 0 10px 24px rgba(37, 211, 102, 0.55),
-                0 4px 10px rgba(13, 37, 56, 0.2);
-    color: #ffffff;
-  }
-  .bagh-whatsapp:focus-visible {
-    outline: 3px solid #f5e6c8;
-    outline-offset: 3px;
-  }
-  .bagh-wa-icon {
-    width: 32px;
-    height: 32px;
-    color: #ffffff;
-    display: block;
-  }
-  /* Tooltip — appears on hover/focus, hidden on touch devices */
-  .bagh-wa-tooltip {
-    position: absolute;
-    right: calc(100% + 12px);
-    top: 50%;
-    transform: translateY(-50%);
-    background: #0d2538;
-    color: #ffffff;
-    padding: 8px 14px;
-    border-radius: 8px;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    font-size: 0.88rem;
-    font-weight: 600;
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    box-shadow: 0 4px 12px rgba(13, 37, 56, 0.2);
-  }
-  .bagh-wa-tooltip::after {
-    content: '';
-    position: absolute;
-    left: 100%;
-    top: 50%;
-    transform: translateY(-50%);
-    border: 6px solid transparent;
-    border-left-color: #0d2538;
-  }
-  .bagh-whatsapp:hover .bagh-wa-tooltip,
-  .bagh-whatsapp:focus-visible .bagh-wa-tooltip {
-    opacity: 1;
-    transform: translateY(-50%) translateX(-2px);
-  }
-  /* Pulse — subtle attention-draw, hidden when reduced-motion is preferred */
-  .bagh-wa-pulse {
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: #25D366;
-    z-index: -1;
-    animation: bagh-pulse 2.4s ease-out infinite;
-  }
-  @keyframes bagh-pulse {
-    0% { transform: scale(1); opacity: 0.6; }
-    80% { transform: scale(1.6); opacity: 0; }
-    100% { transform: scale(1.6); opacity: 0; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .bagh-wa-pulse { animation: none; }
-    .bagh-whatsapp { transition: none; }
-  }
-  /* On very small screens, slightly smaller so it doesn't crowd thumb-reach */
-  @media (max-width: 480px) {
-    .bagh-whatsapp { width: 54px; height: 54px; bottom: 18px; right: 18px; }
-    .bagh-wa-icon { width: 28px; height: 28px; }
-    .bagh-wa-tooltip { display: none; }
-  }
-  /* Hide on print */
-  @media print { .bagh-whatsapp { display: none; } }
+     
 </style>
 </body>
 </html>
