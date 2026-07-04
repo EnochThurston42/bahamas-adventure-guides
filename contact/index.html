@@ -127,7 +127,7 @@
  <div class="sidebar-card">
  <h3>Prefer to chat?</h3>
  <p>Open the chat widget and tell us what you need. Same fast response.</p>
- <button class="btn btn-primary" onclick="var bi=setInterval(function(){if(window.baghOpenChat){clearInterval(bi);baghOpenChat();}},50);setTimeout(function(){clearInterval(bi)},3000);" style="width:100%;background:#e8c98a;color:#0d2538;">Open Live Chat</button>
+ <button class="btn btn-primary" onclick="(function f(){var b=document.getElementById('bagh-chat-btn');var p=document.getElementById('bagh-chat-panel');if(b&&p){b.click();}else{setTimeout(f,100);}})()" style="width:100%;background:#e8c98a;color:#0d2538;">Open Live Chat</button>
  </div>
  </aside>
  </div>

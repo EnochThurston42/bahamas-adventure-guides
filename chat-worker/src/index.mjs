@@ -446,7 +446,7 @@ const WIDGET_JS = `
     '.bagh-form input { padding: 10px 14px; border: 1px solid #ddd; border-radius: 10px; font-size: 0.9rem; outline: none; }',
     '.bagh-form button { background: #075f74; color: #fff; border: none; border-radius: 10px; padding: 12px; cursor: pointer; font-weight: 600; }',
 '.bagh-form button:hover { background: #0d2538; }',
-    '.bagh-loading { display: flex; align-items: center; justify-content: center; flex: 1; color: #888; }',
+    '.bagh-loading { display: flex; align-items: center; justify-content: center; flex: 1; color: #888; font-size: 0.9rem; } .bagh-loading::after { content: ''; width: 16px; height: 16px; margin-left: 8px; border: 2px solid #ddd; border-top-color: #075f74; border-radius: 50%; animation: bagh-spin 0.6s linear infinite; } @keyframes bagh-spin { to { transform: rotate(360deg); } }',
     '@media (max-width: 480px) { #bagh-chat-panel { width: 100vw; height: 100vh; bottom: 0; right: 0; border-radius: 0; max-height: none; } #bagh-chat-btn { bottom: 16px; right: 16px; width: 54px; height: 54px; } }'
   ].join(' ');
   document.head.appendChild(style);
@@ -534,6 +534,11 @@ const WIDGET_JS = `
       chatView.style.display = 'flex';
       connectWs(data.ws_url);
       loadHistory();
+      setTimeout(function() {
+        if (loading.style.display !== 'none') {
+          loading.innerHTML = 'Still connecting...';
+        }
+      }, 8000);
     } catch (e) {
       loading.innerHTML = 'Failed to connect. <button onclick="location.reload()" style="margin-top:8px;padding:8px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;">Retry</button>';
     }
@@ -908,6 +913,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 
   if (TOKEN) checkAuth();
 
+
   document.getElementById('login-btn').onclick = login;
   document.getElementById('login-pass').onkeydown = e => { if (e.key === 'Enter') login(); };
 
@@ -944,17 +950,70 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     setInterval(loadMsgs, 3000);
   }
 
+  var prevUnread = 0;
+
   async function loadConvs() {
     try {
       const r = await fetch(API + '/api/conversations', { headers: headers() });
       const d = await r.json();
+      
+      // Count unread conversations (ones not currently active)
+      var totalUnread = 0;
+      for (const c of (d.conversations || [])) {
+        if (c.room_id !== activeRoom && (c.unread_agent || 0) > 0) {
+          totalUnread++;
+        }
+      }
+      
+      // Show badge
+      var badge = document.getElementById('unread-badge');
+      if (totalUnread > 0) {
+        if (!badge) {
+          badge = document.createElement('div');
+          badge.id = 'unread-badge';
+          badge.className = 'notif-badge';
+          document.body.appendChild(badge);
+        }
+        badge.textContent = totalUnread > 9 ? '9+' : totalUnread;
+        
+        // Play notification sound on new message (works on mobile browsers too)
+        if (totalUnread > prevUnread) {
+          try {
+            var ctx = new (window.AudioContext || window.webkitAudioContext)();
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.value = 800;
+            gain.gain.value = 0.15;
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.15);
+            // Second beep
+            var osc2 = ctx.createOscillator();
+            var gain2 = ctx.createGain();
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+            osc2.frequency.value = 1000;
+            gain2.gain.value = 0.1;
+            osc2.start(ctx.currentTime + 0.2);
+            osc2.stop(ctx.currentTime + 0.35);
+            // Vibrate on mobile
+            if (navigator.vibrate) navigator.vibrate(200);
+          } catch(e) {}
+        }
+      } else {
+        if (badge) badge.remove();
+      }
+      prevUnread = totalUnread;
+      
       const list = document.getElementById('conv-list');
       list.innerHTML = '';
       document.getElementById('conv-count').textContent = (d.conversations || []).length + ' conversations';
       for (const c of (d.conversations || [])) {
         const el = document.createElement('div');
         el.className = 'conv-item' + (c.room_id === activeRoom ? ' active' : '');
-        el.innerHTML = '<h4>' + (c.visitor_name || 'Anonymous') + '</h4><p>' + (c.last_message_preview || 'No messages') + '</p><div class="meta">' + c.status + '</div>';
+        var unreadMark = (c.unread_agent || 0) > 0 ? ' <span style="background:#e8c98a;color:#0d2538;font-size:0.7rem;padding:1px 6px;border-radius:8px;margin-left:6px;">' + c.unread_agent + '</span>' : '';
+        el.innerHTML = '<h4>' + (c.visitor_name || 'Anonymous') + unreadMark + '</h4><p>' + (c.last_message_preview || 'No messages') + '</p><div class="meta">' + c.status + '</div>';
         el.onclick = () => selectConv(c.room_id);
         list.appendChild(el);
       }
@@ -1043,6 +1102,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     '.dmsg-file { display: block; font-size: 0.8rem; color: #c8a97e; text-decoration: underline; margin-top: 4px; }',
     '.dmsg-map-wrap { margin-top: 6px; border-radius: 8px; overflow: hidden; border: 1px solid #e0ddd5; max-width: 320px; }',
     '.dmsg-map-wrap iframe { width: 100%; height: 200px; border: 0; display: block; border-radius: 8px; }',
+  '.notif-badge { position: fixed; top: 12px; right: 12px; background: #e74c3c; color: #fff; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; z-index: 100; box-shadow: 0 2px 8px rgba(231,76,60,0.3); }',
   ];
   const dashStyle = document.createElement('style');
   dashStyle.textContent = DASHBOARD_STYLES.join(' ');
