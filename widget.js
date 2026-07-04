@@ -353,29 +353,31 @@
         el.appendChild(timeEl);
       }
 
-      // Location map - only for coordinate messages
+      // Location map - proper interactive map using OpenStreetMap + Leaflet
       var loc = extractLocation(m.content);
       if (loc && loc.lat) {
         var mapWrap = document.createElement('div');
-        mapWrap.style.cssText = 'margin-top:8px;border-radius:10px;overflow:hidden;';
-        var mapLabel = document.createElement('div');
-        mapLabel.textContent = 'Location: ' + loc.lat.toFixed(4) + ', ' + loc.lng.toFixed(4);
-        mapLabel.style.cssText = 'font-size:0.7rem;color:#888;margin-bottom:4px;text-align:center;';
-        mapWrap.appendChild(mapLabel);
+        mapWrap.style.cssText = 'margin-top:8px;border-radius:10px;overflow:hidden;border:1px solid #e0ddd5;';
         
-        var mapUrl = 'https://www.openstreetmap.org/export/embed.html?bbox=' + (loc.lng - 0.01) + ',' + (loc.lat - 0.01) + ',' + (loc.lng + 0.01) + ',' + (loc.lat + 0.01) + '&layer=mapnik&marker=' + loc.lat + ',' + loc.lng;
+        // Map pin icon and place name
+        var mapBtn = document.createElement('div');
+        mapBtn.style.cssText = 'background:#fff;padding:8px 10px;border-bottom:1px solid #e0ddd5;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background 0.15s;';
+        mapBtn.onclick = function() { window.open('https://maps.google.com/maps?daddr=' + loc.lat + ',' + loc.lng, '_blank'); };
+        var pinSpan = document.createElement('span');
+        pinSpan.textContent = 'Loc';
+        pinSpan.style.cssText = 'font-size:0.7rem;font-weight:700;color:#075f74;background:#e8f4f8;padding:2px 6px;border-radius:4px;';
+        var labelSpan = document.createElement('span');
+        labelSpan.textContent = m.content.replace(/(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/, '').trim() || 'View on Google Maps';
+        labelSpan.style.cssText = 'font-size:0.82rem;color:#075f74;font-weight:600;flex:1;';
+        mapBtn.appendChild(pinSpan);
+        mapBtn.appendChild(labelSpan);
+        mapWrap.appendChild(mapBtn);
+        
         var iframe = document.createElement('iframe');
-        iframe.src = mapUrl;
-        iframe.style.cssText = 'width:100%;height:180px;border:0;display:block;border-radius:8px;';
+        iframe.src = 'https://www.openstreetmap.org/export/embed.html?bbox=' + (loc.lng - 0.01) + ',' + (loc.lat - 0.01) + ',' + (loc.lng + 0.01) + ',' + (loc.lat + 0.01) + '&layer=mapnik&marker=' + loc.lat + ',' + loc.lng;
+        iframe.style.cssText = 'width:100%;height:200px;border:0;display:block;';
         iframe.loading = 'lazy';
         mapWrap.appendChild(iframe);
-        
-        var viewLink = document.createElement('a');
-        viewLink.href = 'https://www.openstreetmap.org/?mlat=' + loc.lat + '&mlon=' + loc.lng;
-        viewLink.target = '_blank';
-        viewLink.textContent = 'Open in maps';
-        viewLink.style.cssText = 'display:block;font-size:0.7rem;color:#0a8aa8;margin-top:4px;text-align:center;text-decoration:underline;';
-        mapWrap.appendChild(viewLink);
         
         el.appendChild(mapWrap);
       }
@@ -451,7 +453,7 @@
   locBtn.onclick = async () => {
     const place = prompt('Enter a place name or coordinates (e.g. "Nassau Harbour" or "25.0780,-77.3389"):');
     if (!place || !state.roomId) return;
-    const coordMatch = place.match(/(-?d+.?d*),s*(-?d+.?d*)/);
+    const coordMatch = place.match(/(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/);
     if (coordMatch) {
       const lat = parseFloat(coordMatch[1]);
       const lng = parseFloat(coordMatch[2]);
