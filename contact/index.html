@@ -51,11 +51,7 @@
  <section class="contact-section">
  <div class="container contact-grid">
  <div class="contact-form-wrap">
- <form id="inquiry-form" class="inquiry-form" action="https://formspree.io/f/xwpojdbd" method="POST">
-
- <input type="hidden" name="_subject" value="New Bahamas Adventure inquiry">
- <input type="hidden" name="_next" value="https://bahamas-adventure-guides.pages.dev/thank-you/">
- <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+ <form id="inquiry-form" class="inquiry-form" method="POST">
 
  <fieldset>
  <legend>Your details</legend>
@@ -142,10 +138,49 @@
  var form = document.getElementById('inquiry-form');
  var btn = document.getElementById('submit-btn');
  if (!form || !btn) return;
- form.addEventListener('submit', function() {
+ form.addEventListener('submit', async function(e) {
+ e.preventDefault();
  btn.disabled = true;
- btn.classList.add('is-loading');
  btn.textContent = 'Sending';
+
+ var first = document.getElementById('firstName').value.trim();
+ var last = document.getElementById('lastName').value.trim();
+ var email = document.getElementById('email').value.trim();
+ var phone = document.getElementById('phone').value.trim();
+ var date = document.getElementById('travelDate').value;
+ var group = document.getElementById('groupSize').value;
+ var message = document.getElementById('message').value.trim();
+
+ var checked = [];
+ document.querySelectorAll('input[name="experience[]"]:checked').forEach(function(cb) {
+ checked.push(cb.value);
+ });
+
+ var details = 'Inquiry from ' + first + ' ' + last;
+ if (email) details += '\nEmail: ' + email;
+ if (phone) details += '\nPhone: ' + phone;
+ if (date) details += '\nDate: ' + date;
+ if (group) details += '\nGroup: ' + group;
+ if (checked.length) details += '\nInterests: ' + checked.join(', ');
+ details += '\n\n' + message;
+
+ try {
+ var resp = await fetch('/api/init', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ name: first + ' ' + last, first_name: first, last_name: last, email: email, phone: phone })
+ });
+ var data = await resp.json();
+ if (data.ok && data.room_id) {
+ await fetch('/api/send/' + data.room_id, {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ role: 'visitor', name: first + ' ' + last, content: details })
+ });
+ }
+ } catch(e) {}
+
+ window.location.href = '/thank-you/';
  });
  })();
  </script>
