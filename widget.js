@@ -25,7 +25,7 @@
   function setOnline(online) {
     if (!statusDot || !statusText) return;
     statusDot.className = 'bagh-dot' + (online ? '' : ' bagh-dot--offline');
-    statusText.textContent = online ? "We're online" : "Away - we will reply when back";
+    statusText.textContent = online ? "Available now" : "We will reply soon";
   }
 
   const style = document.createElement('style');
