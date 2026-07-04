@@ -472,6 +472,14 @@ const WIDGET_JS = `
   fileInput.style.display = 'none';
   document.body.appendChild(fileInput);
 
+  // Global open function for site buttons to call reliably
+  window.baghOpenChat = function() {
+    if (!panel) return;
+    panel.classList.add('open');
+    btn.classList.remove('bagh-has-unread');
+    if (state.roomId) loadHistory();
+  };
+
   btn.onclick = () => {
     panel.classList.toggle('open');
     if (panel.classList.contains('open') && state.roomId) loadHistory();

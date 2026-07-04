@@ -3,7 +3,7 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>About — Two Locals, One Mission | Bahamas Adventure Guides</title>
+ <title>About — Bahamas Adventure Guides</title>
  <meta name="description" content="We're two Bahamian friends who got tired of watching tourists get quoted double by booking engines. So we built a better way.">
  <link rel="canonical" href="https://bahamas-adventure-guides.pages.dev/about/">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -12,7 +12,7 @@
  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
  <link rel="stylesheet" href="/styles.css">
 
- <meta property="og:title" content="Two locals. One mission.">
+ <meta property="og:title" content="Local expertise. Island-wide connections.">
  <meta property="og:description" content="We're two Bahamian friends who got tired of watching tourists get quoted double by booking engines. So we built a better way.">
  <meta property="og:url" content="https://bahamas-adventure-guides.pages.dev/about/">
  <meta property="og:image" content="https://bahamas-adventure-guides.pages.dev/og-image.svg">
@@ -71,13 +71,11 @@
    <aside class="story-side">
    <div class="story-card story-card--accent">
   <h3>Talk to us direct</h3>
-  <p style="font-size: 0.95rem; line-height: 1.6; color: #555; margin-bottom: 20px;">
+  <p style="font-size: 0.95rem; line-height: 1.6; color: #fff; margin-bottom: 20px;">
   Open the chat from any page and tell us what you're looking for. No email clutter, no phone tag — just a real conversation with a real person.
   </p>
-  <button class="btn btn-primary" onclick="var btn=document.getElementById('bagh-chat-btn');if(btn){btn.click();}" style="width:100%;">Open Live Chat</button>
-  <p style="font-size: 0.8rem; color: #888; margin-top: 12px; text-align: center;">
-  or email <a href="mailto:inquire@bahamasadventureguides.com" style="color: #c8a97e;">inquire@bahamasadventureguides.com</a>
-  </p>
+  <button class="btn btn-primary" onclick="if(window.baghOpenChat)baghOpenChat();" style="width:100%;">Open Live Chat</button>
+  
   </div>
   </aside>
 
@@ -121,7 +119,7 @@
  <div class="container cta-inner">
  <h2>Ready to plan?</h2>
  <p>Tell us your dates and we'll send back a custom quote from our operator network within 24 hours.</p>
- <button class="btn btn-primary btn-lg" onclick="var btn=document.getElementById('bagh-chat-btn');if(btn){btn.click();}">Open Live Chat</button>
+ <button class="btn btn-primary btn-lg" onclick="if(window.baghOpenChat)baghOpenChat();">Open Live Chat</button>
  </div>
  </section>
 
@@ -146,7 +144,7 @@
  <div>
  <h4>Company</h4>
  <a href="/weather/">Weather</a><a href="/about/">About</a><a href="/contact/">Contact</a>
- <a href="mailto:inquire@bahamasadventureguides.com">inquire@bahamasadventureguides.com</a>
+ <span style="color:#8a9aa8;">Chat with us</span>
  </div>
  </div>
  <p class="footer-fine">© 2026 Bahamas Adventure Guides · All bookings handled by licensed Bahamian operators.</p>
