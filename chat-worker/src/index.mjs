@@ -117,7 +117,7 @@ async function handleUpload(request, env, roomId) {
     const role = formData.get('role') || 'visitor';
     const name = formData.get('name') || 'Guest';
     const caption = (formData.get('caption') || '').trim().slice(0, 200);
-    const content = caption || (file.type.startsWith('image/') ? '📷 Sent an image' : '📎 Sent a file');
+    const content = caption || (file.type.startsWith('image/') ? ' Sent an image' : ' Sent a file');
 
     const msg = await sendMessage(env, roomId, role, name, content);
     msg.file_url = publicUrl;
@@ -193,13 +193,21 @@ export default {
         const body = await request.json();
         const visitorName = (body.name || 'Guest').trim().slice(0, 100);
         const visitorEmail = (body.email || '').trim().slice(0, 200);
+        const visitorPhone = (body.phone || '').trim().slice(0, 20);
+        const visitorAge = (body.age || '').trim().slice(0, 3);
+        const visitorFirstName = (body.first_name || '').trim().slice(0, 50);
+        const visitorLastName = (body.last_name || '').trim().slice(0, 50);
         const roomId = crypto.randomUUID().slice(0, 8);
 
         // Create room meta in KV
         const meta = {
           room_id: roomId,
           visitor_name: visitorName,
+          visitor_first_name: visitorFirstName,
+          visitor_last_name: visitorLastName,
           visitor_email: visitorEmail,
+          visitor_phone: visitorPhone,
+          visitor_age: visitorAge,
           status: 'open',
           created_at: new Date().toISOString(),
           last_message_at: null,
@@ -432,7 +440,7 @@ const WIDGET_JS = `
 '.bagh-file-link { display: block; font-size: 0.8rem; color: #c8a97e; text-decoration: underline; margin-top: 4px; }',
 '.bagh-map-wrap { margin-top: 6px; border-radius: 8px; overflow: hidden; border: 1px solid #e0ddd5; }',
 '.bagh-map-wrap iframe { width: 100%; height: 160px; border: 0; display: block; }',
-    '.bagh-form { padding: 24px 20px; display: flex; flex-direction: column; gap: 12px; flex: 1; justify-content: center; }',
+    '.bagh-form { padding: 24px 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; justify-content: center; }',
     '.bagh-form h3 { margin: 0; font-size: 1.05rem; }',
     '.bagh-form p { margin: 0 0 8px; color: #666; font-size: 0.85rem; }',
     '.bagh-form input { padding: 10px 14px; border: 1px solid #ddd; border-radius: 10px; font-size: 0.9rem; outline: none; }',
@@ -451,7 +459,7 @@ const WIDGET_JS = `
     '<div class="bagh-hdr"><h3>Bahamas Adventure Guides</h3><p>Ask us anything</p><div class="bagh-status" id="bagh-status"><span class="bagh-dot bagh-dot--offline" id="bagh-dot"></span><span id="bagh-status-text">Loading...</span></div><button class="bagh-close" id="bagh-close">&times;</button></div>',
     '<div id="bagh-form" class="bagh-form"><h3>Start chatting</h3><p>Leave your name and we\\'ll be right with you.</p><input type="text" id="bagh-name" placeholder="Your name" maxlength="100" /><button id="bagh-start">Start Chat</button></div>',
     '<div id="bagh-loading" class="bagh-loading" style="display:none">Connecting...</div>',
-    '<div id="bagh-chat-view" style="display:none;flex-direction:column;flex:1"><div class="bagh-msgs" id="bagh-msgs"></div><div class="bagh-input"><button class="bagh-ico-btn" id="bagh-file-btn" title="Attach file">📎</button><textarea id="bagh-input" placeholder="Type..." rows="1"></textarea><button class="bagh-ico-btn" id="bagh-loc-btn" title="Share location">📍</button><button id="bagh-send">Send</button></div></div>',
+    '<div id="bagh-chat-view" style="display:none;flex-direction:column;flex:1"><div class="bagh-msgs" id="bagh-msgs"></div><div class="bagh-input"><button class="bagh-ico-btn" id="bagh-file-btn" title="Attach file">File</button><textarea id="bagh-input" placeholder="Type..." rows="1"></textarea><button class="bagh-ico-btn" id="bagh-loc-btn" title="Share location">Map</button><button id="bagh-send">Send</button></div></div>',
     '</div>'
   ].join('');
   document.body.appendChild(chat);
@@ -464,7 +472,6 @@ const WIDGET_JS = `
   const msgs = document.getElementById('bagh-msgs');
   const input = document.getElementById('bagh-input');
   const sendBtn = document.getElementById('bagh-send');
-  const nameInput = document.getElementById('bagh-name');
   const startBtn = document.getElementById('bagh-start');
   const fileBtn = document.getElementById('bagh-file-btn');
   const locBtn = document.getElementById('bagh-loc-btn');
@@ -491,18 +498,33 @@ const WIDGET_JS = `
   };
   document.getElementById('bagh-close').onclick = () => panel.classList.remove('open');
 
-  nameInput.onkeydown = (e) => { if (e.key === 'Enter') startBtn.click(); };
+  
 
   startBtn.onclick = async () => {
-    const name = nameInput.value.trim();
-    if (!name) return;
-    state.visitorName = name;
+    const first = firstInput.value.trim();
+    const last = lastInput.value.trim();
+    if (!first || !last) {
+      if (!first) firstInput.focus();
+      else lastInput.focus();
+      return;
+    }
+    state.visitorName = first + ' ' + last;
+    state.visitorEmail = emailInput.value.trim();
+    state.visitorPhone = phoneInput.value.trim();
+    state.visitorAge = ageInput.value.trim();
     form.style.display = 'none';
     loading.style.display = 'flex';
     try {
       const resp = await fetch(API + '/api/init', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: state.visitorName, email: '' }),
+        body: JSON.stringify({
+          name: state.visitorName,
+          first_name: first,
+          last_name: last,
+          email: state.visitorEmail,
+          phone: state.visitorPhone,
+          age: state.visitorAge,
+        }),
       });
       const data = await resp.json();
       if (!data.ok) throw new Error();
@@ -672,7 +694,7 @@ const WIDGET_JS = `
           link.className = 'bagh-file-link';
           link.href = m.file_url;
           link.target = '_blank';
-          link.textContent = '📎 ' + (m.file_name || 'View file');
+          link.textContent = ' ' + (m.file_name || 'View file');
           el.appendChild(link);
         }
       }
@@ -706,7 +728,7 @@ const WIDGET_JS = `
     fileInput.value = '';
 
     // Optimistically show uploading
-    addMsg('visitor', 'You', '📷 Uploading...');
+    addMsg('visitor', 'You', ' Uploading...');
 
     const formData = new FormData();
     formData.append('file', file);
@@ -867,9 +889,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     </div>
     <div class="msgs-area" id="msgs-area"><div class="no-conv">Select a conversation</div></div>
     <div class="input-area" id="input-area" style="display:none">
-      <button class="bagh-ico-btn" id="dash-file-btn" title="Attach file">📎</button>
+      <button class="bagh-ico-btn" id="dash-file-btn" title="Attach file">FileFile</button>
       <textarea id="reply-input" placeholder="Type your reply..." rows="1"></textarea>
-      <button class="bagh-ico-btn" id="dash-loc-btn" title="Share location">📍</button>
+      <button class="bagh-ico-btn" id="dash-loc-btn" title="Share location">MapMap</button>
       <button id="reply-btn">Send</button>
     </div>
   </div>
@@ -1117,7 +1139,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
           addLocalMsg('system', '', 'Could not find that place. Try exact coordinates');
         }
       } catch {
-        localMessages = localMessages.filter(m => m.content !== '📍 Searching for ' + place + '...');
+        localMessages = localMessages.filter(m => m.content !== ' Searching for ' + place + '...');
         addLocalMsg('system', '', 'Location search failed');
       }
     }
@@ -1129,7 +1151,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     dashFileInput.value = '';
     dashUploading = true;
 
-    addLocalMsg('agent', 'Adventure Guide Agent', '📷 Uploading...');
+    addLocalMsg('agent', 'Adventure Guide Agent', ' Uploading...');
 
     const formData = new FormData();
     formData.append('file', file);
@@ -1141,7 +1163,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
       const data = await resp.json();
       if (data.ok && data.message) {
         // Remove the optimistic "uploading" message and add the real one
-        localMessages = localMessages.filter(m => m.content !== '📷 Uploading...');
+        localMessages = localMessages.filter(m => m.content !== ' Uploading...');
         addLocalMsg('agent', 'Adventure Guide Agent', data.message.content, data.message.file_url, data.message.file_type, data.message.file_name);
       }
     } catch {}
