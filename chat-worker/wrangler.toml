@@ -16,6 +16,11 @@ class_name = "ChatRegistry"
 tag = "v1"
 new_sqlite_classes = ["ChatRoom", "ChatRegistry"]
 
+# R2 bucket for file uploads
+[[r2_buckets]]
+binding = "CHAT_UPLOADS"
+bucket_name = "bahamas-chat-uploads"
+
 # KV namespace for message and conversation persistence
 [[kv_namespaces]]
 binding = "CHAT_KV"

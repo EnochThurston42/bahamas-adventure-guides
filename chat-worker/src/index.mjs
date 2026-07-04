@@ -45,7 +45,16 @@ async function listMessages(env, roomId, afterId = 0) {
     } catch {}
   }
   msgs.sort((a, b) => a.id - b.id);
-  return msgs;
+  return msgs.map(m => ({
+    id: m.id,
+    sender_role: m.sender_role,
+    sender_name: m.sender_name,
+    content: m.content,
+    created_at: m.created_at,
+    file_url: m.file_url || null,
+    file_type: m.file_type || null,
+    file_name: m.file_name || null,
+  }));
 }
 
 async function sendMessage(env, roomId, senderRole, senderName, content) {
@@ -74,12 +83,77 @@ async function sendMessage(env, roomId, senderRole, senderName, content) {
   return msg;
 }
 
+// ─── Upload helpers ──────────────────────────────────────────
+
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
+const MAX_UPLOAD = 10 * 1024 * 1024; // 10 MB
+
+async function handleUpload(request, env, roomId) {
+  try {
+    const formData = await request.formData();
+    const file = formData.get('file');
+    if (!file) return json({ error: 'No file provided' }, 400);
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return json({ error: 'File type not allowed. Accepted: JPEG, PNG, GIF, WebP, PDF' }, 400);
+    }
+    if (file.size > MAX_UPLOAD) {
+      return json({ error: 'File too large. Max 10 MB' }, 400);
+    }
+
+    const ext = file.name.split('.').pop() || 'jpg';
+    const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const key = `uploads/${roomId}/${filename}`;
+
+    const buffer = await file.arrayBuffer();
+    await env.CHAT_UPLOADS.put(key, buffer, {
+      httpMetadata: { contentType: file.type },
+      customMetadata: { originalName: file.name },
+    });
+
+    const publicUrl = `/api/files/${key}`;
+
+    // Create a message with the file
+    const role = formData.get('role') || 'visitor';
+    const name = formData.get('name') || 'Guest';
+    const caption = (formData.get('caption') || '').trim().slice(0, 200);
+    const content = caption || (file.type.startsWith('image/') ? '📷 Sent an image' : '📎 Sent a file');
+
+    const msg = await sendMessage(env, roomId, role, name, content);
+    msg.file_url = publicUrl;
+    msg.file_type = file.type;
+    msg.file_name = file.name;
+
+    // Store file metadata with the message
+    const msgKey2 = msgKey(roomId, msg.id);
+    const existing = await env.CHAT_KV.get(msgKey2, 'json') || {};
+    existing.file_url = publicUrl;
+    existing.file_type = file.type;
+    existing.file_name = file.name;
+    await env.CHAT_KV.put(msgKey2, JSON.stringify(existing));
+
+    // Broadcast to DO
+    try {
+      const doId = env.CHAT_ROOM.idFromName(roomId);
+      const stub = env.CHAT_ROOM.get(doId);
+      stub.fetch('http://dummy/notify', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'message', ...msg, file_url: publicUrl, file_type: file.type, file_name: file.name }),
+      }).catch(() => {});
+    } catch {}
+
+    return json({ ok: true, message: { ...msg, file_url: publicUrl, file_type: file.type, file_name: file.name } });
+  } catch (err) {
+    return json({ error: 'Upload failed: ' + err.message }, 500);
+  }
+}
+
 // ─── CORS ────────────────────────────────────────────────────
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Chat-Role, X-Chat-Name',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Chat-Role, X-Chat-Name, X-Requested-With',
 };
 
 function json(data, status = 200) {
@@ -200,6 +274,33 @@ export default {
       }
     }
 
+    // API: Upload file
+    const uploadMatch = path.match(/^\/api\/upload\/([a-zA-Z0-9-]+)$/);
+    if (request.method === 'POST' && uploadMatch) {
+      return handleUpload(request, env, uploadMatch[1]);
+    }
+
+    // API: Serve uploaded files
+    const fileMatch = path.match(/^\/api\/files\/(.+)$/);
+    if (request.method === 'GET' && fileMatch) {
+      try {
+        const key = fileMatch[1];
+        const obj = await env.CHAT_UPLOADS.get(key);
+        if (!obj) return json({ error: 'File not found' }, 404);
+        const headers = {
+          'Content-Type': obj.httpMetadata?.contentType || 'application/octet-stream',
+          'Cache-Control': 'public, max-age=31536000',
+          'Access-Control-Allow-Origin': '*',
+        };
+        if (obj.customMetadata?.originalName) {
+          headers['Content-Disposition'] = `inline; filename="${obj.customMetadata.originalName}"`;
+        }
+        return new Response(obj.body, { headers });
+      } catch (err) {
+        return json({ error: 'File not found' }, 404);
+      }
+    }
+
     // API: Get messages
     const msgMatch = path.match(/^\/api\/messages\/([a-zA-Z0-9-]+)$/);
     if (request.method === 'GET' && msgMatch) {
@@ -285,7 +386,18 @@ const WIDGET_JS = `
     visitorName: '',
     visitorEmail: '',
     pollTimer: null,
+    agentsOnline: 0,
+    isTyping: false,
+    typingTimer: null,
   };
+
+  const statusDot = document.getElementById('bagh-dot');
+  const statusText = document.getElementById('bagh-status-text');
+
+  function setOnline(online) {
+    statusDot.className = 'bagh-dot' + (online ? '' : ' bagh-dot--offline');
+    statusText.textContent = online ? 'We\'re online — reply in minutes' : 'Away — we\'ll reply when back';
+  }
 
   const style = document.createElement('style');
   style.textContent = [
@@ -300,15 +412,23 @@ const WIDGET_JS = `
     '.bagh-hdr { background: #c8a97e; color: #fff; padding: 16px 20px; position: relative; }',
     '.bagh-hdr h3 { margin: 0; font-size: 1rem; font-weight: 600; }',
     '.bagh-hdr p { margin: 4px 0 0; font-size: 0.8rem; opacity: 0.85; }',
+    '.bagh-status { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 0.75rem; }',
+    '.bagh-dot { width: 8px; height: 8px; border-radius: 50%; background: #4caf50; display: inline-block; }',
+    '.bagh-dot--offline { background: #999; }',
+    '.bagh-typing { font-size: 0.8rem; color: #888; font-style: italic; padding: 4px 16px; }',
     '.bagh-close { position: absolute; top: 12px; right: 16px; background: none; border: none; color: #fff; font-size: 1.3rem; cursor: pointer; }',
     '.bagh-msgs { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }',
     '.bagh-msg { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; word-wrap: break-word; }',
-    '.bagh-msg--visitor { background: #f0f0f0; color: #1a1a1a; align-self: flex-end; }',
-    '.bagh-msg--agent { background: #c8a97e; color: #fff; align-self: flex-start; }',
+'.bagh-msg--visitor { background: #f0f0f0; color: #1a1a1a; align-self: flex-start; }',
+'.bagh-msg--agent { background: #c8a97e; color: #fff; align-self: flex-end; }',
     '.bagh-msg--system { background: transparent; color: #888; align-self: center; font-size: 0.8rem; font-style: italic; }',
-    '.bagh-input { padding: 12px 16px; border-top: 1px solid #eee; display: flex; gap: 8px; }',
-    '.bagh-input textarea { flex: 1; border: 1px solid #ddd; border-radius: 10px; padding: 10px 14px; font-size: 0.9rem; resize: none; outline: none; font-family: inherit; }',
-    '.bagh-input button { background: #c8a97e; color: #fff; border: none; border-radius: 10px; padding: 10px 16px; cursor: pointer; font-weight: 600; }',
+'.bagh-input { padding: 12px 16px; border-top: 1px solid #eee; display: flex; gap: 8px; align-items: flex-end; }',
+'.bagh-input textarea { flex: 1; border: 1px solid #ddd; border-radius: 10px; padding: 10px 14px; font-size: 0.9rem; resize: none; outline: none; font-family: inherit; }',
+'.bagh-input button { background: #c8a97e; color: #fff; border: none; border-radius: 10px; padding: 10px 16px; cursor: pointer; font-weight: 600; }',
+'.bagh-file-btn { background: none; border: 1px solid #ddd; border-radius: 10px; padding: 8px 10px; cursor: pointer; color: #888; font-size: 1.2rem; line-height: 1; display: flex; align-items: center; }',
+'.bagh-file-btn:hover { background: #f5f5f0; color: #555; }',
+'.bagh-img { max-width: 100%; border-radius: 8px; margin-top: 4px; display: block; }',
+'.bagh-file-link { display: block; font-size: 0.8rem; color: #c8a97e; text-decoration: underline; margin-top: 4px; }',
     '.bagh-form { padding: 24px 20px; display: flex; flex-direction: column; gap: 12px; flex: 1; justify-content: center; }',
     '.bagh-form h3 { margin: 0; font-size: 1.05rem; }',
     '.bagh-form p { margin: 0 0 8px; color: #666; font-size: 0.85rem; }',
@@ -324,10 +444,10 @@ const WIDGET_JS = `
   chat.innerHTML = [
     '<button id="bagh-chat-btn" aria-label="Chat"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg></button>',
     '<div id="bagh-chat-panel">',
-    '<div class="bagh-hdr"><h3>Bahamas Adventure Guides</h3><p>Ask us anything</p><button class="bagh-close" id="bagh-close">&times;</button></div>',
+    '<div class="bagh-hdr"><h3>Bahamas Adventure Guides</h3><p>Ask us anything</p><div class="bagh-status" id="bagh-status"><span class="bagh-dot bagh-dot--offline" id="bagh-dot"></span><span id="bagh-status-text">Loading...</span></div><button class="bagh-close" id="bagh-close">&times;</button></div>',
     '<div id="bagh-form" class="bagh-form"><h3>Start chatting</h3><p>Leave your name and we\'ll be right with you.</p><input type="text" id="bagh-name" placeholder="Your name" maxlength="100" /><button id="bagh-start">Start Chat</button></div>',
     '<div id="bagh-loading" class="bagh-loading" style="display:none">Connecting...</div>',
-    '<div id="bagh-chat-view" style="display:none;flex-direction:column;flex:1"><div class="bagh-msgs" id="bagh-msgs"></div><div class="bagh-input"><textarea id="bagh-input" placeholder="Type..." rows="1"></textarea><button id="bagh-send">Send</button></div></div>',
+    '<div id="bagh-chat-view" style="display:none;flex-direction:column;flex:1"><div class="bagh-msgs" id="bagh-msgs"></div><div class="bagh-input"><button class="bagh-file-btn" id="bagh-file-btn" title="Attach file">📎</button><textarea id="bagh-input" placeholder="Type..." rows="1"></textarea><button id="bagh-send">Send</button></div></div>',
     '</div>'
   ].join('');
   document.body.appendChild(chat);
@@ -342,6 +462,12 @@ const WIDGET_JS = `
   const sendBtn = document.getElementById('bagh-send');
   const nameInput = document.getElementById('bagh-name');
   const startBtn = document.getElementById('bagh-start');
+  const fileBtn = document.getElementById('bagh-file-btn');
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/jpeg,image/png,image/gif,image/webp,application/pdf';
+  fileInput.style.display = 'none';
+  document.body.appendChild(fileInput);
 
   btn.onclick = () => {
     panel.classList.toggle('open');
@@ -377,20 +503,51 @@ const WIDGET_JS = `
 
   function connectWs(wsPath) {
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = proto + '//' + location.host + wsPath;
+    const wsUrl = proto + '//' + location.host + wsPath + '?role=visitor';
     const ws = new WebSocket(wsUrl);
     state.ws = ws;
     ws.onopen = () => {
       state.connected = true;
       ws.send(JSON.stringify({ type: 'set_name', name: state.visitorName }));
+      setOnline(true);
     };
     ws.onmessage = (e) => {
       const data = JSON.parse(e.data);
       if (data.type === 'message' || data.type === 'message_ack') {
-        addMsg(data.sender_role === 'visitor' ? 'visitor' : 'agent', data.sender_name || 'Agent', data.content);
+        addMsg(data.sender_role === 'visitor' ? 'visitor' : 'agent', data.sender_name || 'Agent', data.content, data.file_url, data.file_type, data.file_name);
+      } else if (data.type === 'presence') {
+        state.agentsOnline = data.agents_online || 0;
+        setOnline(data.agents_online > 0);
+      } else if (data.type === 'typing') {
+        if (data.is_typing) {
+          state.isTyping = true;
+          showTyping();
+        } else {
+          state.isTyping = false;
+          hideTyping();
+        }
       }
     };
-    ws.onclose = () => { state.connected = false; startPolling(); };
+    ws.onclose = () => {
+      state.connected = false;
+      setOnline(false);
+      startPolling();
+    };
+  }
+
+  function showTyping() {
+    const existing = document.getElementById('bagh-typing');
+    if (!existing) {
+      const el = document.createElement('div');
+      el.id = 'bagh-typing';
+      el.className = 'bagh-typing';
+      el.textContent = 'Agent is typing...';
+      document.getElementById('bagh-msgs').after(el);
+    }
+  }
+  function hideTyping() {
+    const el = document.getElementById('bagh-typing');
+    if (el) el.remove();
   }
 
   function startPolling() {
@@ -407,14 +564,26 @@ const WIDGET_JS = `
       const resp = await fetch(API + '/api/messages/' + state.roomId);
       const data = await resp.json();
       if (data.messages) {
-        state.messages = data.messages;
+        state.messages = data.messages.map(m => ({
+          id: m.id,
+          sender_role: m.sender_role,
+          sender_name: m.sender_name,
+          content: m.content,
+          file_url: m.file_url,
+          file_type: m.file_type,
+          file_name: m.file_name,
+        }));
         renderMsgs();
       }
     } catch {}
   }
 
-  function addMsg(role, name, text) {
-    state.messages.push({ sender_role: role, sender_name: name, content: text, id: Date.now() });
+  function addMsg(role, name, text, fileUrl, fileType, fileName) {
+    state.messages.push({
+      sender_role: role, sender_name: name, content: text,
+      file_url: fileUrl, file_type: fileType, file_name: fileName,
+      id: Date.now(),
+    });
     renderMsgs();
   }
 
@@ -423,7 +592,30 @@ const WIDGET_JS = `
     for (const m of state.messages) {
       const el = document.createElement('div');
       el.className = 'bagh-msg bagh-msg--' + (m.sender_role === 'visitor' ? 'visitor' : 'agent');
-      el.textContent = m.content;
+      
+      const textEl = document.createElement('div');
+      textEl.textContent = m.content;
+      el.appendChild(textEl);
+
+      // File preview
+      if (m.file_url) {
+        if (m.file_type && m.file_type.startsWith('image/')) {
+          const img = document.createElement('img');
+          img.className = 'bagh-img';
+          img.src = m.file_url;
+          img.alt = m.file_name || 'Image';
+          img.loading = 'lazy';
+          el.appendChild(img);
+        } else {
+          const link = document.createElement('a');
+          link.className = 'bagh-file-link';
+          link.href = m.file_url;
+          link.target = '_blank';
+          link.textContent = '📎 ' + (m.file_name || 'View file');
+          el.appendChild(link);
+        }
+      }
+
       msgs.appendChild(el);
     }
     msgs.scrollTop = msgs.scrollHeight;
@@ -445,8 +637,48 @@ const WIDGET_JS = `
     } catch {}
   }
 
+  // File upload
+  fileBtn.onclick = () => fileInput.click();
+  fileInput.onchange = async () => {
+    const file = fileInput.files?.[0];
+    if (!file || !state.roomId) return;
+    fileInput.value = '';
+
+    // Optimistically show uploading
+    addMsg('visitor', 'You', '📷 Uploading...');
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('role', 'visitor');
+    formData.append('name', state.visitorName);
+
+    try {
+      const resp = await fetch(API + '/api/upload/' + state.roomId, {
+        method: 'POST', body: formData,
+      });
+      const data = await resp.json();
+      if (data.ok) {
+        // Real message with file URL will arrive via WS or poll
+      }
+    } catch {}
+    loadHistory();
+  };
+
   sendBtn.onclick = sendMessage;
-  input.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } };
+  input.onkeydown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    // Send typing indicator
+    if (state.ws && state.connected) {
+      state.ws.send(JSON.stringify({ type: 'typing', is_typing: true }));
+      clearTimeout(state.typingTimer);
+      state.typingTimer = setTimeout(() => {
+        if (state.ws && state.connected) state.ws.send(JSON.stringify({ type: 'typing', is_typing: false }));
+      }, 2000);
+    }
+  };
+  input.onblur = () => {
+    if (state.ws && state.connected) state.ws.send(JSON.stringify({ type: 'typing', is_typing: false }));
+  };
 
   // If returning visitor, skip form
   if (state.roomId) {
@@ -469,8 +701,8 @@ const DASHBOARD_HTML = `<!DOCTYPE html>
 <title>Agent Dashboard — Bahamas Adventure Guides</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f0; color: #1a1a1a; }
-.login-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #2d4a2d; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f2ed; color: #1a1a1a; }
+.login-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #0d2538 0%, #1a4a5e 50%, #0d2538 100%); }
 .login-box { background: #fff; padding: 40px; border-radius: 16px; width: 360px; max-width: 90vw; }
 .login-box h1 { font-size: 1.4rem; margin-bottom: 4px; }
 .login-box p { color: #666; font-size: 0.9rem; margin-bottom: 24px; }
@@ -481,30 +713,32 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .login-error { color: #e74c3c; font-size: 0.85rem; margin-top: 8px; display: none; }
 .app { display: none; height: 100vh; }
 .app.auth { display: flex; }
-.sidebar { width: 340px; background: #fff; border-right: 1px solid #e0ddd5; display: flex; flex-direction: column; }
-.sidebar-header { padding: 16px 20px; border-bottom: 1px solid #e0ddd5; }
-.sidebar-header h2 { font-size: 1.1rem; }
+.sidebar { width: 340px; background: #0d2538; border-right: 1px solid #1a3a4e; display: flex; flex-direction: column; color: #e8e4de; }
+.sidebar-header { padding: 16px 20px; border-bottom: 1px solid #1a3a4e; }
+.sidebar-header h2 { font-size: 1.1rem; color: #c8a97e; }
+.sidebar-header p { color: #8a9aa8; }
 .conv-list { flex: 1; overflow-y: auto; }
-.conv-item { padding: 14px 20px; border-bottom: 1px solid #f0eee8; cursor: pointer; }
-.conv-item:hover { background: #f9f8f5; }
-.conv-item.active { background: #f0ede6; }
-.conv-item h4 { font-size: 0.9rem; margin-bottom: 4px; }
-.conv-item p { font-size: 0.82rem; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.conv-item .meta { font-size: 0.75rem; color: #aaa; margin-top: 4px; }
-.main-area { flex: 1; display: flex; flex-direction: column; background: #fff; }
-.chat-header { padding: 16px 24px; border-bottom: 1px solid #e0ddd5; display: flex; justify-content: space-between; align-items: center; }
+.conv-item { padding: 14px 20px; border-bottom: 1px solid #1a3a4e; cursor: pointer; transition: background 0.15s; }
+.conv-item:hover { background: #153242; }
+.conv-item.active { background: #1a3a4e; }
+.conv-item h4 { font-size: 0.9rem; margin-bottom: 4px; color: #e8e4de; }
+.conv-item p { font-size: 0.82rem; color: #8a9aa8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv-item .meta { font-size: 0.75rem; color: #5a7a8a; margin-top: 4px; }
+.main-area { flex: 1; display: flex; flex-direction: column; background: #f4f2ed; }
+.chat-header { padding: 16px 24px; border-bottom: 1px solid #e0ddd5; background: #fff; display: flex; justify-content: space-between; align-items: center; }
 .chat-header h3 { font-size: 1rem; }
 .chat-header .info { font-size: 0.8rem; color: #888; }
 .chat-header button { background: none; border: 1px solid #ddd; border-radius: 8px; padding: 6px 14px; font-size: 0.8rem; cursor: pointer; }
-.msgs-area { flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 10px; }
+.msgs-area { flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 10px; background: #fff; margin: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 .dmsg { max-width: 70%; padding: 10px 14px; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; }
-.dmsg--visitor { background: #f0f0f0; align-self: flex-end; }
-.dmsg--agent { background: #c8a97e; color: #fff; align-self: flex-start; }
+.dmsg--visitor { background: #e8e4de; align-self: flex-start; }
+.dmsg--agent { background: #0d2538; color: #fff; align-self: flex-end; }
 .dmsg--system { align-self: center; font-size: 0.8rem; color: #888; font-style: italic; }
-.input-area { padding: 16px 24px; border-top: 1px solid #e0ddd5; display: flex; gap: 10px; }
-.input-area textarea { flex: 1; border: 1px solid #ddd; border-radius: 10px; padding: 10px 14px; font-size: 0.9rem; resize: none; outline: none; font-family: inherit; }
-.input-area textarea:focus { border-color: #c8a97e; }
+.input-area { padding: 12px 24px 20px; border-top: 1px solid #e0ddd5; background: #fff; display: flex; gap: 10px; }
+.input-area textarea { flex: 1; border: 1px solid #ddd; border-radius: 10px; padding: 10px 14px; font-size: 0.9rem; resize: none; outline: none; font-family: inherit; background: #f4f2ed; }
+.input-area textarea:focus { border-color: #c8a97e; background: #fff; }
 .input-area button { background: #c8a97e; color: #fff; border: none; border-radius: 10px; padding: 10px 20px; cursor: pointer; font-weight: 600; }
+.input-area button:hover { opacity: 0.9; }
 .no-conv { flex: 1; display: flex; align-items: center; justify-content: center; color: #888; }
 @media (max-width: 768px) { .sidebar { width: 100%; } .app { flex-direction: column; } }
 </style>
@@ -545,6 +779,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
   const TOKEN = localStorage.getItem('bagh_token');
   let activeRoom = null;
   let pollTimer = null;
+  let wsConnections = {}; // roomId -> WebSocket
 
   if (TOKEN) checkAuth();
 
@@ -603,10 +838,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 
   async function selectConv(roomId) {
     activeRoom = roomId;
+    localMessages = [];
     document.getElementById('close-btn').style.display = 'inline-block';
     document.getElementById('input-area').style.display = 'flex';
     document.querySelector('.no-conv') && (document.querySelector('.no-conv').style.display = 'none');
     loadConvs();
+    connectRoomWS(roomId);
     await loadMsgs();
   }
 
@@ -615,19 +852,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     try {
       const r = await fetch(API + '/api/messages/' + activeRoom);
       const d = await r.json();
-      const area = document.getElementById('msgs-area');
-      area.innerHTML = '';
+      // Merge: keep local messages, add any from server that we dont have
+      const serverIds = new Set(localMessages.map(m => m.id));
       for (const m of (d.messages || [])) {
-        const el = document.createElement('div');
-        el.className = 'dmsg dmsg--' + (m.sender_role === 'visitor' ? 'visitor' : 'agent');
-        el.textContent = m.content;
-        area.appendChild(el);
+        if (!serverIds.has(m.id)) {
+          localMessages.push(m);
+        }
       }
-      area.scrollTop = area.scrollHeight;
-      
-      // Update title
-      const meta = (d.messages && d.messages.length > 0) ? d.messages[0] : null;
-      if (meta) document.getElementById('chat-title').textContent = meta.sender_name || 'Visitor';
+      localMessages.sort((a, b) => (a.id || 0) - (b.id || 0));
+      renderLocalMsgs();
     } catch {}
   }
 
@@ -636,16 +869,100 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(); }
   };
 
+  let localMessages = [];
+
+  function addLocalMsg(role, name, content) {
+    localMessages.push({
+      id: Date.now() + Math.random(),
+      sender_role: role,
+      sender_name: name,
+      content: content,
+      created_at: new Date().toISOString(),
+    });
+    renderLocalMsgs();
+  }
+
+  function connectRoomWS(roomId) {
+    // Close any existing connection for another room
+    for (const [rid, ws] of Object.entries(wsConnections)) {
+      if (rid !== roomId) { ws.close(); delete wsConnections[rid]; }
+    }
+    if (wsConnections[roomId]) return; // already connected
+    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(proto + '//' + location.host + '/api/ws/' + roomId + '?role=agent');
+    wsConnections[roomId] = ws;
+    ws.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      if (data.type === 'message' && data.sender_role === 'visitor') {
+        // Incoming visitor message - add to local if not already there
+        if (!localMessages.find(m => m.id === data.id)) {
+          localMessages.push({
+            id: data.id || Date.now(),
+            sender_role: 'visitor',
+            sender_name: data.sender_name || 'Visitor',
+            content: data.content,
+            created_at: data.created_at,
+          });
+          renderLocalMsgs();
+        }
+      }
+    };
+    ws.onclose = () => { delete wsConnections[roomId]; };
+  }
+
+  const DASHBOARD_STYLES = [
+    '.dmsg-img { max-width: 100%; border-radius: 8px; margin-top: 4px; cursor: pointer; display: block; }',
+    '.dmsg-file { display: block; font-size: 0.8rem; color: #c8a97e; text-decoration: underline; margin-top: 4px; }',
+  ];
+  const dashStyle = document.createElement('style');
+  dashStyle.textContent = DASHBOARD_STYLES.join(' ');
+  document.head.appendChild(dashStyle);
+
+  function renderLocalMsgs() {
+    const area = document.getElementById('msgs-area');
+    area.innerHTML = '';
+    for (const m of localMessages) {
+      const el = document.createElement('div');
+      el.className = 'dmsg dmsg--' + (m.sender_role === 'visitor' ? 'visitor' : 'agent');
+
+      const textEl = document.createElement('div');
+      textEl.textContent = m.content;
+      el.appendChild(textEl);
+
+      if (m.file_url) {
+        if (m.file_type && m.file_type.startsWith('image/')) {
+          const img = document.createElement('img');
+          img.className = 'dmsg-img';
+          img.src = m.file_url;
+          img.alt = m.file_name || 'Image';
+          img.loading = 'lazy';
+          img.onclick = () => window.open(m.file_url, '_blank');
+          el.appendChild(img);
+        } else {
+          const link = document.createElement('a');
+          link.className = 'dmsg-file';
+          link.href = m.file_url;
+          link.target = '_blank';
+          link.textContent = '\u{1F4CE} ' + (m.file_name || 'View file');
+          el.appendChild(link);
+        }
+      }
+
+      area.appendChild(el);
+    }
+    area.scrollTop = area.scrollHeight;
+  }
+
   async function sendReply() {
     const text = document.getElementById('reply-input').value.trim();
     if (!text || !activeRoom) return;
     document.getElementById('reply-input').value = '';
+    addLocalMsg('agent', 'Adventure Guide Agent', text);
     try {
       await fetch(API + '/api/send/' + activeRoom, {
         method: 'POST', headers: { ...headers(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ role: 'agent', name: 'Adventure Guide Agent', content: text }),
       });
-      await loadMsgs();
     } catch {}
   }
 
