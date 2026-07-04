@@ -16,6 +16,11 @@ class_name = "ChatRegistry"
 tag = "v1"
 new_sqlite_classes = ["ChatRoom", "ChatRegistry"]
 
+# KV namespace for message and conversation persistence
+[[kv_namespaces]]
+binding = "CHAT_KV"
+id = "ac5cf9d8b6fd46f5854dc421124aaf08"
+
 # Environment variables for agent auth
 [vars]
 AGENT_USERNAME = "admin"
