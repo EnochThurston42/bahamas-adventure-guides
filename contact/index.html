@@ -4,18 +4,20 @@
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <title>Contact & Inquire | Bahamas Adventure Guides</title>
- <meta name="description" content="Plan your Bahamas adventure. Tell us your dates and group size, we'll send back a custom quote within 24 hours. No booking fees, no commitment.">
+ <meta name="description" content="Plan your Bahamas trip. Tell us your dates and group size, we will send back a custom quote within 24 hours. No booking fees, no commitment.">
  <link rel="canonical" href="https://bahamas-adventure-guides.pages.dev/contact/">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+ <link rel="icon" type="image/svg+xml" href="/favicon.svg">
  <link rel="preconnect" href="https://fonts.googleapis.com">
  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
  <link rel="stylesheet" href="/styles.css">
 
- <meta property="og:title" content="Tell us what you're planning.">
- <meta property="og:description" content="Plan your Bahamas adventure. Tell us your dates and group size, we'll send back a custom quote within 24 hours. No booking fees, no commitment.">
+ <meta property="og:title" content="Plan your Bahamas trip">
+ <meta property="og:description" content="Tell us your dates and group size. We will send back a custom quote within 24 hours.">
  <meta property="og:url" content="https://bahamas-adventure-guides.pages.dev/contact/">
  <meta property="og:image" content="https://bahamas-adventure-guides.pages.dev/og-image.png">
+ <meta property="og:image:width" content="1200">
+ <meta property="og:image:height" content="630">
  <meta name="twitter:card" content="summary_large_image">
  <meta name="twitter:image" content="https://bahamas-adventure-guides.pages.dev/og-image.png">
 </head>
@@ -31,9 +33,9 @@
  </span><span class="brand-text">Bahamas Adventure Guides</span></a>
  <nav class="primary-nav" aria-label="Primary">
  <a href="/yachts/">Yachts</a><a href="/boat-charters/">Boat Charters</a><a href="/dinner-cruises/">Dinner Cruises</a>
- <a href="/jet-ski/">Jet Ski</a><a href="/taxi/">Taxi</a><a href="/massage/">Massage</a><a href="/weather/">Weather</a><a href="/about/">About</a>
+ <a href="/jet-ski/">Jet Ski</a><a href="/taxi/">Taxi</a><a href="/about/">About</a>
  </nav>
- <a href="/contact/" class="btn btn-primary btn-sm">Inquire</a>
+ <a href="/contact/" class="btn btn-primary btn-sm">Get a Quote</a>
  </div>
  </header>
 
@@ -41,35 +43,112 @@
  <div class="hero-overlay"></div>
  <div class="container hero-content">
  <p class="eyebrow">Plan your trip</p>
- <h1>Tell us what you're planning.</h1>
- <p class="hero-sub">Yacht, charter, dinner cruise, jet ski | or all of it. Click the chat button below and tell us your plans. We'll send back a real quote from our operator network within 24 hours. No email forms, no phone tag.</p>
+ <h1>Tell us what you need.</h1>
+ <p class="hero-sub">Fill in the form or open the chat. We will send back a real quote from our operator network within 24 hours.</p>
  </div>
  </section>
 
- <section class="how">
- <div class="container">
- <header class="section-head">
- <p class="eyebrow">How to reach us</p>
- <h2>Just open the chat</h2>
- </header>
- <div style="max-width: 640px; margin: 0 auto; text-align: center;">
- <p style="font-size: 1.1rem; line-height: 1.7; color: #555; margin-bottom: 12px;">
- Tap the chat button in the bottom-right corner of any page. Tell us your dates, group size, and what you're looking for. We'll handle the rest.
- </p>
- <p style="font-size: 1.1rem; line-height: 1.7; color: #555; margin-bottom: 32px;">
- All conversations are saved | you can leave and come back. Your messages go straight to our team.
- </p>
+ <section class="contact-section">
+ <div class="container contact-grid">
+ <div class="contact-form-wrap">
+ <form id="inquiry-form" class="inquiry-form" action="https://formspree.io/f/xwpojdbd" method="POST">
 
- <div class="hero-cta" style="justify-content: center;">
- <button class="btn btn-primary btn-lg" onclick="var bi=setInterval(function(){if(window.baghOpenChat){clearInterval(bi);baghOpenChat();}},50);setTimeout(function(){clearInterval(bi)},3000);" style="background:#e8c98a;color:#0d2538;">Open Chat Now</button>
+ <input type="hidden" name="_subject" value="New Bahamas Adventure inquiry">
+ <input type="hidden" name="_next" value="https://bahamas-adventure-guides.pages.dev/thank-you/">
+ <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+
+ <fieldset>
+ <legend>Your details</legend>
+ <div class="field-row">
+ <div class="field">
+ <label for="firstName">First name <span class="req">*</span></label>
+ <input type="text" id="firstName" name="firstName" required autocomplete="given-name" placeholder="Sarah">
+ </div>
+ <div class="field">
+ <label for="lastName">Last name <span class="req">*</span></label>
+ <input type="text" id="lastName" name="lastName" required autocomplete="family-name" placeholder="Mitchell">
+ </div>
+ </div>
+ <div class="field-row">
+ <div class="field">
+ <label for="email">Email <span class="req">*</span></label>
+ <input type="email" id="email" name="email" required autocomplete="email" placeholder="you@example.com">
+ </div>
+ <div class="field">
+ <label for="phone">Phone</label>
+ <input type="tel" id="phone" name="phone" autocomplete="tel" placeholder="+1 242 555 1234">
+ <small>Optional, but fastest way to reach you</small>
+ </div>
+ </div>
+ </fieldset>
+
+ <fieldset>
+ <legend>Your trip</legend>
+ <div class="field">
+ <label>What interests you? <span class="req">*</span></label>
+ <div class="checkbox-grid">
+ <label class="checkbox-pill"><input type="checkbox" name="experience[]" value="yacht"><span>Yacht</span></label>
+ <label class="checkbox-pill"><input type="checkbox" name="experience[]" value="boat-charter"><span>Boat charter</span></label>
+ <label class="checkbox-pill"><input type="checkbox" name="experience[]" value="dinner-cruise"><span>Dinner cruise</span></label>
+ <label class="checkbox-pill"><input type="checkbox" name="experience[]" value="jet-ski"><span>Jet ski</span></label>
+ <label class="checkbox-pill"><input type="checkbox" name="experience[]" value="taxi"><span>Taxi / tour</span></label>
+ <label class="checkbox-pill"><input type="checkbox" name="experience[]" value="other"><span>Something else</span></label>
+ </div>
+ </div>
+ <div class="field-row">
+ <div class="field">
+ <label for="travelDate">Approximate date</label>
+ <input type="date" id="travelDate" name="travelDate">
+ <small>Flexible? Put your best guess.</small>
+ </div>
+ <div class="field">
+ <label for="groupSize">Group size</label>
+ <select id="groupSize" name="groupSize">
+ <option value="">Select</option>
+ <option>Just me</option>
+ <option>2 (couple)</option>
+ <option>3-4</option>
+ <option>5-8</option>
+ <option>9-15</option>
+ <option>16+</option>
+ </select>
+ </div>
+ </div>
+ <div class="field">
+ <label for="message">Tell us about your trip <span class="req">*</span></label>
+ <textarea id="message" name="message" required rows="4" placeholder="Anniversary trip, love snorkeling, prefer quiet spots over party boats. Vegetarian meals. Open to suggestions."></textarea>
+ </div>
+ </fieldset>
+
+ <div class="form-actions">
+ <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">Send Inquiry</button>
+ <p class="form-fine">We reply within 24 hours. We never share your details.</p>
+ </div>
+ </form>
  </div>
 
- <p style="margin-top: 32px; font-size: 0.9rem; color: #888;">
- All inquiries go through the live chat widget below.
- </p>
+ <aside class="contact-sidebar">
+ <div class="sidebar-card">
+ <h3>Prefer to chat?</h3>
+ <p>Open the chat widget and tell us what you need. Same fast response.</p>
+ <button class="btn btn-primary" onclick="var bi=setInterval(function(){if(window.baghOpenChat){clearInterval(bi);baghOpenChat();}},50);setTimeout(function(){clearInterval(bi)},3000);" style="width:100%;background:#e8c98a;color:#0d2538;">Open Live Chat</button>
  </div>
+ </aside>
  </div>
  </section>
+
+ <script>
+ (function() {
+ var form = document.getElementById('inquiry-form');
+ var btn = document.getElementById('submit-btn');
+ if (!form || !btn) return;
+ form.addEventListener('submit', function() {
+ btn.disabled = true;
+ btn.classList.add('is-loading');
+ btn.textContent = 'Sending';
+ });
+ })();
+ </script>
 
 <script src="/widget.js"></script>
 </body>

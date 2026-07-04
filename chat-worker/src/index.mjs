@@ -439,7 +439,7 @@ const WIDGET_JS = `
 '.bagh-img { max-width: 100%; border-radius: 8px; margin-top: 4px; display: block; }',
 '.bagh-file-link { display: block; font-size: 0.8rem; color: #c8a97e; text-decoration: underline; margin-top: 4px; }',
 '.bagh-map-wrap { margin-top: 6px; border-radius: 8px; overflow: hidden; border: 1px solid #e0ddd5; }',
-'.bagh-map-wrap iframe { width: 100%; height: 160px; border: 0; display: block; }',
+'.bagh-map-wrap iframe { width: 100%; height: 200px; border: 0; display: block; border-radius: 8px; }',
     '.bagh-form { padding: 24px 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; justify-content: center; }',
     '.bagh-form h3 { margin: 0; font-size: 1.05rem; }',
     '.bagh-form p { margin: 0 0 8px; color: #666; font-size: 0.85rem; }',
@@ -637,7 +637,7 @@ const WIDGET_JS = `
 
   function locationEmbedUrl(loc) {
     if (loc.lat && loc.lng) {
-      return 'https://maps.google.com/maps?q=' + loc.lat + ',' + loc.lng + '&z=15&output=embed';
+      return 'https://www.openstreetmap.org/export/embed.html?bbox=' + (loc.lng - 0.02) + ',' + (loc.lat - 0.02) + ',' + (loc.lng + 0.02) + ',' + (loc.lat + 0.02) + '&layer=mapnik&marker=' + loc.lat + ',' + loc.lng + ';'
     }
     return null;
   }
@@ -761,7 +761,7 @@ const WIDGET_JS = `
       // Geocode via Nominatim
       addMsg('visitor', 'You', 'Searching for ' + place + '...');
       try {
-        const resp = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(place) + '&limit=1', {
+        const resp = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(place) + '&countrycodes=bs&limit=5', {
           headers: { 'User-Agent': 'BahamasAdventureGuides/1.0' }
         });
         const data = await resp.json();
@@ -1042,7 +1042,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     '.dmsg-img { max-width: 100%; border-radius: 8px; margin-top: 4px; cursor: pointer; display: block; }',
     '.dmsg-file { display: block; font-size: 0.8rem; color: #c8a97e; text-decoration: underline; margin-top: 4px; }',
     '.dmsg-map-wrap { margin-top: 6px; border-radius: 8px; overflow: hidden; border: 1px solid #e0ddd5; max-width: 320px; }',
-    '.dmsg-map-wrap iframe { width: 100%; height: 160px; border: 0; display: block; }',
+    '.dmsg-map-wrap iframe { width: 100%; height: 200px; border: 0; display: block; border-radius: 8px; }',
   ];
   const dashStyle = document.createElement('style');
   dashStyle.textContent = DASHBOARD_STYLES.join(' ');
@@ -1063,7 +1063,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
       const dashLoc = extractLocation(m.content);
       if (dashLoc) {
         const url = dashLoc.lat && dashLoc.lng
-          ? 'https://maps.google.com/maps?q=' + dashLoc.lat + ',' + dashLoc.lng + '&z=15&output=embed'
+          ? 'https://www.openstreetmap.org/export/embed.html?bbox=' + (dashLoc.lng - 0.02) + ',' + (dashLoc.lat - 0.02) + ',' + (dashLoc.lng + 0.02) + ',' + (dashLoc.lat + 0.02) + '&layer=mapnik&marker=' + dashLoc.lat + ',' + dashLoc.lng
           : null;
         if (url) {
           const wrap = document.createElement('div');
@@ -1123,7 +1123,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     } else {
       addLocalMsg('agent', 'Adventure Guide Agent', 'Searching for ' + place + '...');
       try {
-        const resp = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(place) + '&limit=1', {
+        const resp = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(place) + '&countrycodes=bs&limit=5', {
           headers: { 'User-Agent': 'BahamasAdventureGuides/1.0' }
         });
         const data = await resp.json();
