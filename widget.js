@@ -337,7 +337,7 @@
       var hasCoord = /(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/.test(clean);
       if (hasCoord) {
         clean = clean.replace(/(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/, '');
-        clean = clean.trim() || 'Shared a location';
+        clean = clean.replace(/[:,]\s*$/, '').trim() || 'Shared a location';
       }
       
       var textEl = document.createElement('div');
