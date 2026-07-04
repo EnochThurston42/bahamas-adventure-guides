@@ -422,13 +422,15 @@ const WIDGET_JS = `
 '.bagh-msg--visitor { background: #f0f0f0; color: #1a1a1a; align-self: flex-start; }',
 '.bagh-msg--agent { background: #c8a97e; color: #fff; align-self: flex-end; }',
     '.bagh-msg--system { background: transparent; color: #888; align-self: center; font-size: 0.8rem; font-style: italic; }',
-'.bagh-input { padding: 12px 16px; border-top: 1px solid #eee; display: flex; gap: 8px; align-items: flex-end; }',
+'.bagh-input { padding: 12px 16px; border-top: 1px solid #eee; display: flex; gap: 6px; align-items: flex-end; }',
 '.bagh-input textarea { flex: 1; border: 1px solid #ddd; border-radius: 10px; padding: 10px 14px; font-size: 0.9rem; resize: none; outline: none; font-family: inherit; }',
-'.bagh-input button { background: #c8a97e; color: #fff; border: none; border-radius: 10px; padding: 10px 16px; cursor: pointer; font-weight: 600; }',
-'.bagh-file-btn { background: none; border: 1px solid #ddd; border-radius: 10px; padding: 8px 10px; cursor: pointer; color: #888; font-size: 1.2rem; line-height: 1; display: flex; align-items: center; }',
-'.bagh-file-btn:hover { background: #f5f5f0; color: #555; }',
+'.bagh-input button { background: #c8a97e; color: #fff; border: none; border-radius: 10px; padding: 10px 16px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }',
+'.bagh-ico-btn { background: none; border: 1px solid #ddd; border-radius: 10px; padding: 8px 10px; cursor: pointer; color: #888; font-size: 1.1rem; line-height: 1; display: flex; align-items: center; flex-shrink: 0; }',
+'.bagh-ico-btn:hover { background: #f5f5f0; color: #555; }',
 '.bagh-img { max-width: 100%; border-radius: 8px; margin-top: 4px; display: block; }',
 '.bagh-file-link { display: block; font-size: 0.8rem; color: #c8a97e; text-decoration: underline; margin-top: 4px; }',
+'.bagh-map-wrap { margin-top: 6px; border-radius: 8px; overflow: hidden; border: 1px solid #e0ddd5; }',
+'.bagh-map-wrap iframe { width: 100%; height: 160px; border: 0; display: block; }',
     '.bagh-form { padding: 24px 20px; display: flex; flex-direction: column; gap: 12px; flex: 1; justify-content: center; }',
     '.bagh-form h3 { margin: 0; font-size: 1.05rem; }',
     '.bagh-form p { margin: 0 0 8px; color: #666; font-size: 0.85rem; }',
@@ -447,7 +449,7 @@ const WIDGET_JS = `
     '<div class="bagh-hdr"><h3>Bahamas Adventure Guides</h3><p>Ask us anything</p><div class="bagh-status" id="bagh-status"><span class="bagh-dot bagh-dot--offline" id="bagh-dot"></span><span id="bagh-status-text">Loading...</span></div><button class="bagh-close" id="bagh-close">&times;</button></div>',
     '<div id="bagh-form" class="bagh-form"><h3>Start chatting</h3><p>Leave your name and we\'ll be right with you.</p><input type="text" id="bagh-name" placeholder="Your name" maxlength="100" /><button id="bagh-start">Start Chat</button></div>',
     '<div id="bagh-loading" class="bagh-loading" style="display:none">Connecting...</div>',
-    '<div id="bagh-chat-view" style="display:none;flex-direction:column;flex:1"><div class="bagh-msgs" id="bagh-msgs"></div><div class="bagh-input"><button class="bagh-file-btn" id="bagh-file-btn" title="Attach file">📎</button><textarea id="bagh-input" placeholder="Type..." rows="1"></textarea><button id="bagh-send">Send</button></div></div>',
+    '<div id="bagh-chat-view" style="display:none;flex-direction:column;flex:1"><div class="bagh-msgs" id="bagh-msgs"></div><div class="bagh-input"><button class="bagh-ico-btn" id="bagh-file-btn" title="Attach file">📎</button><textarea id="bagh-input" placeholder="Type..." rows="1"></textarea><button class="bagh-ico-btn" id="bagh-loc-btn" title="Share location">📍</button><button id="bagh-send">Send</button></div></div>',
     '</div>'
   ].join('');
   document.body.appendChild(chat);
@@ -463,6 +465,7 @@ const WIDGET_JS = `
   const nameInput = document.getElementById('bagh-name');
   const startBtn = document.getElementById('bagh-start');
   const fileBtn = document.getElementById('bagh-file-btn');
+  const locBtn = document.getElementById('bagh-loc-btn');
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
   fileInput.accept = 'image/jpeg,image/png,image/gif,image/webp,application/pdf';
@@ -578,6 +581,45 @@ const WIDGET_JS = `
     } catch {}
   }
 
+  function extractLocation(text) {
+    if (!text) return null;
+    // Pattern: lat,lng (e.g. 25.0780,-77.3389)
+    const coordMatch = text.match(/(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/);
+    if (coordMatch) {
+      const lat = parseFloat(coordMatch[1]);
+      const lng = parseFloat(coordMatch[2]);
+      if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+        return { lat, lng };
+      }
+    }
+    // Pattern: /location place name - geocode via Nominatim
+    const locCmd = text.match(/\/location\s+(.+)/i);
+    if (locCmd) {
+      return { query: locCmd[1].trim() };
+    }
+    return null;
+  }
+
+  function locationEmbedUrl(loc) {
+    if (loc.lat && loc.lng) {
+      return 'https://maps.google.com/maps?q=' + loc.lat + ',' + loc.lng + '&z=15&output=embed';
+    }
+    return null;
+  }
+
+  function renderLocationMap(container, loc) {
+    const url = locationEmbedUrl(loc);
+    if (!url) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'bagh-map-wrap';
+    const iframe = document.createElement('iframe');
+    iframe.src = url;
+    iframe.loading = 'lazy';
+    iframe.title = 'Map location';
+    wrap.appendChild(iframe);
+    container.appendChild(wrap);
+  }
+
   function addMsg(role, name, text, fileUrl, fileType, fileName) {
     state.messages.push({
       sender_role: role, sender_name: name, content: text,
@@ -596,6 +638,12 @@ const WIDGET_JS = `
       const textEl = document.createElement('div');
       textEl.textContent = m.content;
       el.appendChild(textEl);
+
+      // Location map preview
+      const loc = extractLocation(m.content);
+      if (loc) {
+        renderLocationMap(el, loc);
+      }
 
       // File preview
       if (m.file_url) {
@@ -662,6 +710,43 @@ const WIDGET_JS = `
       }
     } catch {}
     loadHistory();
+  };
+
+  // Location sharing
+  locBtn.onclick = async () => {
+    const place = prompt('Enter a place name or coordinates (e.g. "Nassau Harbour" or "25.0780,-77.3389"):');
+    if (!place || !state.roomId) return;
+    const coordMatch = place.match(/(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/);
+    if (coordMatch) {
+      const lat = parseFloat(coordMatch[1]);
+      const lng = parseFloat(coordMatch[2]);
+      input.value = lat + ',' + lng;
+      sendMessage();
+    } else {
+      // Geocode via Nominatim
+      addMsg('visitor', 'You', 'Searching for ' + place + '...');
+      try {
+        const resp = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(place) + '&limit=1', {
+          headers: { 'User-Agent': 'BahamasAdventureGuides/1.0' }
+        });
+        const data = await resp.json();
+        if (data && data.length > 0) {
+          const lat = parseFloat(data[0].lat);
+          const lng = parseFloat(data[0].lon);
+          const displayName = data[0].display_name.split(',')[0];
+          input.value = displayName + ': ' + lat + ',' + lng;
+          // Replace the searching message
+          state.messages = state.messages.filter(m => m.content !== 'Searching for ' + place + '...');
+          sendMessage();
+        } else {
+          state.messages = state.messages.filter(m => m.content !== 'Searching for ' + place + '...');
+          addMsg('system', '', 'Could not find that place. Try coordinates (e.g. 25.0780,-77.3389)');
+        }
+      } catch {
+        state.messages = state.messages.filter(m => m.content !== 'Searching for ' + place + '...');
+        addMsg('system', '', 'Location search failed. Try coordinates (e.g. 25.0780,-77.3389)');
+      }
+    }
   };
 
   sendBtn.onclick = sendMessage;
@@ -739,6 +824,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .input-area textarea:focus { border-color: #c8a97e; background: #fff; }
 .input-area button { background: #c8a97e; color: #fff; border: none; border-radius: 10px; padding: 10px 20px; cursor: pointer; font-weight: 600; }
 .input-area button:hover { opacity: 0.9; }
+.input-area .bagh-ico-btn { background: none; border: 1px solid #ddd; border-radius: 10px; padding: 8px 10px; cursor: pointer; color: #888; font-size: 1.1rem; line-height: 1; display: flex; align-items: center; flex-shrink: 0; }
+.input-area .bagh-ico-btn:hover { background: #f5f5f0; color: #555; }
 .no-conv { flex: 1; display: flex; align-items: center; justify-content: center; color: #888; }
 @media (max-width: 768px) { .sidebar { width: 100%; } .app { flex-direction: column; } }
 </style>
@@ -767,7 +854,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     </div>
     <div class="msgs-area" id="msgs-area"><div class="no-conv">Select a conversation</div></div>
     <div class="input-area" id="input-area" style="display:none">
+      <button class="bagh-ico-btn" id="dash-file-btn" title="Attach file">📎</button>
       <textarea id="reply-input" placeholder="Type your reply..." rows="1"></textarea>
+      <button class="bagh-ico-btn" id="dash-loc-btn" title="Share location">📍</button>
       <button id="reply-btn">Send</button>
     </div>
   </div>
@@ -780,6 +869,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
   let activeRoom = null;
   let pollTimer = null;
   let wsConnections = {}; // roomId -> WebSocket
+  let dashUploading = false;
 
   if (TOKEN) checkAuth();
 
@@ -871,12 +961,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 
   let localMessages = [];
 
-  function addLocalMsg(role, name, content) {
+  function addLocalMsg(role, name, content, fileUrl, fileType, fileName) {
     localMessages.push({
       id: Date.now() + Math.random(),
       sender_role: role,
       sender_name: name,
       content: content,
+      file_url: fileUrl || null,
+      file_type: fileType || null,
+      file_name: fileName || null,
       created_at: new Date().toISOString(),
     });
     renderLocalMsgs();
@@ -913,6 +1006,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
   const DASHBOARD_STYLES = [
     '.dmsg-img { max-width: 100%; border-radius: 8px; margin-top: 4px; cursor: pointer; display: block; }',
     '.dmsg-file { display: block; font-size: 0.8rem; color: #c8a97e; text-decoration: underline; margin-top: 4px; }',
+    '.dmsg-map-wrap { margin-top: 6px; border-radius: 8px; overflow: hidden; border: 1px solid #e0ddd5; max-width: 320px; }',
+    '.dmsg-map-wrap iframe { width: 100%; height: 160px; border: 0; display: block; }',
   ];
   const dashStyle = document.createElement('style');
   dashStyle.textContent = DASHBOARD_STYLES.join(' ');
@@ -928,6 +1023,24 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
       const textEl = document.createElement('div');
       textEl.textContent = m.content;
       el.appendChild(textEl);
+
+      // Dashboard location map
+      const dashLoc = extractLocation(m.content);
+      if (dashLoc) {
+        const url = dashLoc.lat && dashLoc.lng
+          ? 'https://maps.google.com/maps?q=' + dashLoc.lat + ',' + dashLoc.lng + '&z=15&output=embed'
+          : null;
+        if (url) {
+          const wrap = document.createElement('div');
+          wrap.className = 'dmsg-map-wrap';
+          const iframe = document.createElement('iframe');
+          iframe.src = url;
+          iframe.loading = 'lazy';
+          iframe.title = 'Map location';
+          wrap.appendChild(iframe);
+          el.appendChild(wrap);
+        }
+      }
 
       if (m.file_url) {
         if (m.file_type && m.file_type.startsWith('image/')) {
@@ -952,6 +1065,75 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     }
     area.scrollTop = area.scrollHeight;
   }
+
+  // Dashboard file upload
+  const dashFileInput = document.createElement('input');
+  dashFileInput.type = 'file';
+  dashFileInput.accept = 'image/jpeg,image/png,image/gif,image/webp,application/pdf';
+  dashFileInput.style.display = 'none';
+  document.body.appendChild(dashFileInput);
+
+  document.getElementById('dash-file-btn').onclick = () => dashFileInput.click();
+
+  // Dashboard location sharing
+  document.getElementById('dash-loc-btn').onclick = async () => {
+    const place = prompt('Enter a place name or coordinates (e.g. "Paradise Harbour Marina" or "25.0780,-77.3389"):');
+    if (!place || !activeRoom) return;
+    const coordMatch = place.match(/(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/);
+    if (coordMatch) {
+      const lat = parseFloat(coordMatch[1]);
+      const lng = parseFloat(coordMatch[2]);
+      document.getElementById('reply-input').value = lat + ',' + lng;
+      document.getElementById('reply-btn').click();
+    } else {
+      addLocalMsg('agent', 'Adventure Guide Agent', 'Searching for ' + place + '...');
+      try {
+        const resp = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(place) + '&limit=1', {
+          headers: { 'User-Agent': 'BahamasAdventureGuides/1.0' }
+        });
+        const data = await resp.json();
+        if (data && data.length > 0) {
+          const lat = data[0].lat;
+          const lng = data[0].lon;
+          const displayName = data[0].display_name.split(',')[0];
+          localMessages = localMessages.filter(m => m.content !== 'Searching for ' + place + '...');
+          document.getElementById('reply-input').value = displayName + ': ' + lat + ',' + lng;
+          document.getElementById('reply-btn').click();
+        } else {
+          localMessages = localMessages.filter(m => m.content !== 'Searching for ' + place + '...');
+          addLocalMsg('system', '', 'Could not find that place. Try exact coordinates');
+        }
+      } catch {
+        localMessages = localMessages.filter(m => m.content !== '📍 Searching for ' + place + '...');
+        addLocalMsg('system', '', 'Location search failed');
+      }
+    }
+  };
+
+  dashFileInput.onchange = async () => {
+    const file = dashFileInput.files?.[0];
+    if (!file || !activeRoom || dashUploading) return;
+    dashFileInput.value = '';
+    dashUploading = true;
+
+    addLocalMsg('agent', 'Adventure Guide Agent', '📷 Uploading...');
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('role', 'agent');
+    formData.append('name', 'Adventure Guide Agent');
+
+    try {
+      const resp = await fetch(API + '/api/upload/' + activeRoom, { method: 'POST', body: formData });
+      const data = await resp.json();
+      if (data.ok && data.message) {
+        // Remove the optimistic "uploading" message and add the real one
+        localMessages = localMessages.filter(m => m.content !== '📷 Uploading...');
+        addLocalMsg('agent', 'Adventure Guide Agent', data.message.content, data.message.file_url, data.message.file_type, data.message.file_name);
+      }
+    } catch {}
+    dashUploading = false;
+  };
 
   async function sendReply() {
     const text = document.getElementById('reply-input').value.trim();
