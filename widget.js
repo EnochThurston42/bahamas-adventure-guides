@@ -250,7 +250,7 @@
   function extractLocation(text) {
     if (!text) return null;
     // Pattern: lat,lng (e.g. 25.0780,-77.3389)
-    const coordMatch = text.match(/(-?d+.?d*),s*(-?d+.?d*)/);
+    const coordMatch = text.match(/(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/);
     if (coordMatch) {
       const lat = parseFloat(coordMatch[1]);
       const lng = parseFloat(coordMatch[2]);
