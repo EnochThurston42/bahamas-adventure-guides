@@ -309,6 +309,28 @@ export default {
       }
     }
 
+    // API: Reverse geocode (location sharing)
+    if (request.method === 'GET' && path === '/api/geocode') {
+      const lat = url.searchParams.get('lat');
+      const lon = url.searchParams.get('lon');
+      if (!lat || !lon) return json({ error: 'lat and lon required' }, 400);
+      try {
+        const osmRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=14&accept-language=en`, {
+          headers: { 'User-Agent': 'BahamasAdventureGuides/1.0' }
+        });
+        const data = await osmRes.json();
+        const name = data.display_name ? data.display_name.split(',')[0] : `${lat.substring(0,6)}, ${lon.substring(0,6)}`;
+        const flat = parseFloat(lat);
+        const flon = parseFloat(lon);
+        return json({
+          lat: flat, lon: flon, name,
+          mapEmbed: `https://www.openstreetmap.org/export/embed.html?bbox=${flon-0.01},${flat-0.01},${flon+0.01},${flat+0.01}&layer=mapnik&marker=${lat},${lon}`
+        });
+      } catch (err) {
+        return json({ error: err.message }, 500);
+      }
+    }
+
     // API: Get messages
     const msgMatch = path.match(/^\/api\/messages\/([a-zA-Z0-9-]+)$/);
     if (request.method === 'GET' && msgMatch) {
@@ -628,7 +650,7 @@ const WIDGET_JS = `
   function extractLocation(text) {
     if (!text) return null;
     // Pattern: lat,lng (e.g. 25.0780,-77.3389)
-    const coordMatch = text.match(/(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/);
+    const coordMatch = text.match(/(-?\\d+\\.?\\d*),\\s*(-?\\d+\\.?\\d*)/);
     if (coordMatch) {
       const lat = parseFloat(coordMatch[1]);
       const lng = parseFloat(coordMatch[2]);
@@ -770,7 +792,7 @@ const WIDGET_JS = `
       // Geocode via Nominatim
       addMsg('visitor', 'You', 'Searching for ' + place + '...');
       try {
-        const resp = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(place) + '&countrycodes=bs&limit=5', {
+        const resp = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(place) + '&countrycodes=bs&limit=5&viewbox=-79.0,27.5,-71.0,20.5&bounded=1', {
           headers: { 'User-Agent': 'BahamasAdventureGuides/1.0' }
         });
         const data = await resp.json();
@@ -1126,17 +1148,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
       textEl.textContent = m.content;
       el.appendChild(textEl);
 
-      // Dashboard location map
-      const dashLoc = extractLocation(m.content);
-      if (dashLoc) {
-        const url = dashLoc.lat && dashLoc.lng
-          ? 'https://www.openstreetmap.org/export/embed.html?bbox=' + (dashLoc.lng - 0.02) + ',' + (dashLoc.lat - 0.02) + ',' + (dashLoc.lng + 0.02) + ',' + (dashLoc.lat + 0.02) + '&layer=mapnik&marker=' + dashLoc.lat + ',' + dashLoc.lng
-          : null;
-        if (url) {
-          const wrap = document.createElement('div');
+      // Dashboard location map - inline coordinate detection
+      var coordMatch = m.content.match(/(-?\\d+\\.?\\d*),\\s*(-?\\d+\\.?\\d*)/);
+      if (coordMatch) {
+        var lat = parseFloat(coordMatch[1]);
+        var lng = parseFloat(coordMatch[2]);
+        if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+          var wrap = document.createElement('div');
           wrap.className = 'dmsg-map-wrap';
-          const iframe = document.createElement('iframe');
-          iframe.src = url;
+          var iframe = document.createElement('iframe');
+          iframe.src = 'https://www.openstreetmap.org/export/embed.html?bbox=' + (lng - 0.02) + ',' + (lat - 0.02) + ',' + (lng + 0.02) + ',' + (lat + 0.02) + '&layer=mapnik&marker=' + lat + ',' + lng;
           iframe.loading = 'lazy';
           iframe.title = 'Map location';
           wrap.appendChild(iframe);
@@ -1190,7 +1211,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     } else {
       addLocalMsg('agent', 'Adventure Guide Agent', 'Searching for ' + place + '...');
       try {
-        const resp = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(place) + '&countrycodes=bs&limit=5', {
+        const resp = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(place) + '&countrycodes=bs&limit=5&viewbox=-79.0,27.5,-71.0,20.5&bounded=1', {
           headers: { 'User-Agent': 'BahamasAdventureGuides/1.0' }
         });
         const data = await resp.json();
