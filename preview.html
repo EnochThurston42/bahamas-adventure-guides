@@ -15,8 +15,8 @@
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
  <meta property="og:image:width" content="1200">
  <meta property="og:image:height" content="630">
- <meta property="og:image" content="https://bahamas-adventure-guides.pages.dev/og-image.png">
- <meta name="twitter:image" content="https://bahamas-adventure-guides.pages.dev/og-image.png">
+ <meta property="og:image" content="https://bahamas-adventure-guides.pages.dev/og-image.jpg">
+ <meta name="twitter:image" content="https://bahamas-adventure-guides.pages.dev/og-image.jpg">
  <meta name="twitter:card" content="summary_large_image">
  <meta property="og:url" content="https://bahamas-adventure-guides.pages.dev/">
  <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -654,6 +654,11 @@ h1, h2, h3, h4 {
  .value-card h3 { font-size: 1.25rem; margin: 0 0 12px; }
  .value-card p { margin: 0; color: var(--c-muted); font-size: 0.95rem; line-height: 1.65; }
 </style>
+<script type="application/ld+json">{
+ "@context": "https://schema.org",
+ "@type": "BreadcrumbList",
+ "itemListElement": [{"@type":"ListItem","position":1,"name":"Home","item":"https://bahamas-adventure-guides.pages.dev/"},{"@type":"ListItem","position":2,"name":"Preview.Html","item":"https://bahamas-adventure-guides.pages.dev/preview.html/"}]
+ }</script>
 </head>
 <body>
 
@@ -676,6 +681,7 @@ h1, h2, h3, h4 {
  <a href="/contact/" class="btn btn-primary btn-sm">Get a Quote</a>
  </div>
  </header>
+<nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span> / </span><span>Preview.Html</span></nav>
 
  <!-- ========== HERO ========== -->
  <section class="hero">

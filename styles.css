@@ -795,3 +795,9 @@ h1, h2, h3, h4 {
 .social-proof p { font-size: 0.82rem; color: #6b5e4a; margin: 0; text-align: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .sp-dot { display: inline-block; width: 6px; height: 6px; background: #25D366; border-radius: 50%; margin-right: 8px; vertical-align: middle; animation: sp-pulse 2s ease-in-out infinite; }
 @keyframes sp-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* ========== BREADCRUMB ========== */
+.breadcrumb { display:flex;align-items:center;gap:6px;padding:12px 0 0;font-size:0.8rem;color:#8a9aa8;flex-wrap:wrap; }
+.breadcrumb a { color:#0a8aa8;text-decoration:none; }
+.breadcrumb a:hover { text-decoration:underline; }
+.breadcrumb span { color:#8a9aa8; }

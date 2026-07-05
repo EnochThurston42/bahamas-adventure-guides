@@ -17,7 +17,7 @@
  <meta property="og:url" content="https://bahamas-adventure-guides.pages.dev/weather/">
  <meta property="og:image:width" content="1200">
  <meta property="og:image:height" content="630">
- <meta property="og:image" content="https://bahamas-adventure-guides.pages.dev/og-image.png">
+ <meta property="og:image" content="https://bahamas-adventure-guides.pages.dev/og-image.jpg">
  <meta name="twitter:card" content="summary_large_image">
 
 <script type="application/ld+json">
@@ -72,6 +72,11 @@
   .weather-grid { grid-template-columns: 1fr; }
 }
 </style>
+<script type="application/ld+json">{
+ "@context": "https://schema.org",
+ "@type": "BreadcrumbList",
+ "itemListElement": [{"@type":"ListItem","position":1,"name":"Home","item":"https://bahamas-adventure-guides.pages.dev/"},{"@type":"ListItem","position":2,"name":"Weather","item":"https://bahamas-adventure-guides.pages.dev/weather/"}]
+ }</script>
 </head>
 <body>
 
@@ -90,6 +95,7 @@
  <a href="/contact/" class="btn btn-primary btn-sm">Get a Quote</a>
  </div>
  </header>
+<nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span> / </span><span>Weather</span></nav>
 
  <section class="weather-hero">
  <div class="container">
