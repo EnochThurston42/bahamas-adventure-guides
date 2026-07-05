@@ -3,37 +3,34 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Guest Reviews | Bahamas Adventure Guides</title>
- <meta name="description" content="Real reviews from guests who booked through Bahamas Adventure Guides. Yacht charters, boat tours, dinner cruises, jet ski rentals, and more in Nassau & Exuma.">
+ <title>Guest Reviews</title>
+ <meta name="description" content="Real reviews from guests who booked through Bahamas Adventure Guides. Share your experience and help others plan their trip.">
  <meta property="og:title" content="Guest Reviews | Bahamas Adventure Guides">
- <meta property="og:description" content="Real reviews from guests who booked through Bahamas Adventure Guides.">
+ <meta property="og:description" content="Real reviews from guests who booked through us.">
  <meta property="og:type" content="website">
  <link rel="canonical" href="https://bahamas-adventure-guides.pages.dev/reviews/">
  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
  <meta property="og:image" content="https://bahamas-adventure-guides.pages.dev/og-image.png">
  <meta property="og:image:width" content="1200">
  <meta property="og:image:height" content="630">
- <meta name="twitter:image" content="https://bahamas-adventure-guides.pages.dev/og-image.png">
  <meta name="twitter:card" content="summary_large_image">
  <meta property="og:url" content="https://bahamas-adventure-guides.pages.dev/reviews/">
  <link rel="preconnect" href="https://fonts.googleapis.com">
  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
  <link rel="stylesheet" href="/styles.css">
- <script type="application/ld+json">
+ <script type="application/ld+json" id="review-schema">
  {
  "@context": "https://schema.org",
  "@type": "LocalBusiness",
  "name": "Bahamas Adventure Guides",
- "description": "Tourism lead-gen service connecting visitors with local Bahamian operators.",
  "url": "https://bahamas-adventure-guides.pages.dev/",
  "aggregateRating": {
    "@type": "AggregateRating",
-   "ratingValue": "4.8",
+   "ratingValue": "0",
    "reviewCount": "0",
    "bestRating": "5"
- },
- "review": []
+ }
  }
  </script>
 </head>
@@ -49,7 +46,7 @@
  </span><span class="brand-text">Bahamas Adventure Guides</span></a>
  <nav class="primary-nav" aria-label="Primary">
  <a href="/yachts/">Yachts</a><a href="/boat-charters/">Boat Charters</a><a href="/dinner-cruises/">Dinner Cruises</a>
- <a href="/jet-ski/">Jet Ski</a><a href="/taxi/">Taxi</a><a href="/massage/">Massage</a><a href="/weather/">Weather</a><a href="/about/">About</a>
+ <a href="/jet-ski/">Jet Ski</a><a href="/taxi/">Taxi</a><a href="/about/">About</a>
  </nav>
  <a href="/contact/" class="btn btn-primary btn-sm">Get a Quote</a>
  </div>
@@ -59,82 +56,54 @@
  <div class="hero-overlay"></div>
  <div class="container hero-content">
  <p class="eyebrow">Guest reviews</p>
- <h1>Real trips, real people, real Bahamas.</h1>
- <p class="hero-sub">Every review on this page is from a guest who booked through us. We don't edit or filter | what you see is what our vendors delivered.</p>
+ <h1>Real trips, real people.</h1>
+ <p class="hero-sub">Reviews from guests who booked through us.</p>
  </div>
  </section>
 
  <section class="how">
  <div class="container">
  <header class="section-head">
- <p class="eyebrow">How reviews work</p>
- <h2>Discount for a review | honest incentive</h2>
+ <p class="eyebrow">Leave a review</p>
+ <h2>Had a trip with us?</h2>
  </header>
- <p class="section-text">When you book through us, your vendor may offer a discount in exchange for an honest review at the end of your trip. You pay less. Future guests get real feedback. Everyone wins.</p>
- <p class="section-text">We don't pay for fake reviews, we don't edit the ones we get, and we don't remove negative feedback unless it violates our <a href="#guidelines">guidelines</a>.</p>
+ <div style="max-width:560px;margin:0 auto;">
+ <div id="review-form">
+ <p style="margin-bottom:16px;color:#555;">Tell others about your experience. Reviews help future guests choose the right trip.</p>
+ <input type="text" id="rev-name" placeholder="Your name" style="width:100%;padding:12px 16px;border:1.5px solid #ddd;border-radius:12px;font-size:0.95rem;margin-bottom:10px;outline:none;">
+ <input type="email" id="rev-email" placeholder="Your email" style="width:100%;padding:12px 16px;border:1.5px solid #ddd;border-radius:12px;font-size:0.95rem;margin-bottom:10px;outline:none;">
+ <input type="text" id="rev-trip" placeholder="Trip type (e.g. Yacht Charter, Jet Ski)" style="width:100%;padding:12px 16px;border:1.5px solid #ddd;border-radius:12px;font-size:0.95rem;margin-bottom:10px;outline:none;">
+ <div style="margin-bottom:10px;display:flex;gap:4px;">
+ <span style="font-size:0.9rem;color:#555;margin-right:8px;line-height:32px;">Rating:</span>
+ <select id="rev-rating" style="padding:8px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:0.95rem;">
+ <option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option>
+ </select>
+ <span style="font-size:0.85rem;color:#888;margin-left:8px;line-height:32px;">/ 5</span>
+ </div>
+ <textarea id="rev-text" placeholder="Tell us about your trip" style="width:100%;padding:12px 16px;border:1.5px solid #ddd;border-radius:12px;font-size:0.95rem;margin-bottom:10px;outline:none;resize:vertical;min-height:100px;font-family:inherit;"></textarea>
+ <button id="rev-submit" class="btn btn-primary" style="width:100%;background:#075f74;">Submit Review</button>
+ <p id="rev-status" style="margin-top:8px;font-size:0.85rem;color:#888;"></p>
+ </div>
+ </div>
  </div>
  </section>
 
- <!-- REVIEWS GRID -->
- <section class="packages">
+ <section class="packages" id="reviews-section">
  <div class="container">
  <header class="section-head">
  <p class="eyebrow">Recent reviews</p>
  <h2>What guests are saying</h2>
  </header>
-
- <div class="reviews-grid" id="reviews-container">
-
- <div class="review-empty">
- <div class="review-empty-icon">
- <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
- <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
- </svg>
- </div>
- <h3>No reviews yet | be the first</h3>
- <p>Book a trip through us, then share your experience. Your review helps other travellers choose the right vendor | and you save on your booking.</p>
- <a href="/contact/" class="btn btn-primary">Book a Trip</a>
- 
- </div>
-
+ <div id="reviews-list" style="max-width:700px;margin:0 auto;">
+ <p id="reviews-loading" style="text-align:center;color:#888;">Loading reviews...</p>
  </div>
  </div>
  </section>
 
- <!-- SUBMIT A REVIEW -->
  <section class="cta-band">
  <div class="container cta-inner">
  <h2>Booked with us recently?</h2>
- <p>Share your experience | honest feedback helps us and future guests. Plus, your vendor may offer a discount for your review.</p>
- 
- </div>
- </section>
-
- <!-- GUIDELINES -->
- <section class="faq" id="guidelines">
- <div class="container">
- <header class="section-head">
- <p class="eyebrow">Review guidelines</p>
- <h2>Keeping it real</h2>
- </header>
- <div class="faq-list">
- <details>
- <summary>Who can leave a review?</summary>
- <p>Anyone who booked a trip through Bahamas Adventure Guides. Reviews from guests who didn't book through us are not accepted | this keeps feedback tied to real experiences.</p>
- </details>
- <details>
- <summary>Are reviews edited or filtered?</summary>
- <p>No. We publish every review we receive, positive or negative, as long as it follows these guidelines. We don't edit for tone, length, or content.</p>
- </details>
- <details>
- <summary>What's not allowed?</summary>
- <p>Hate speech, personal attacks on crew members, false statements about safety or legality, and spam. Reviews violating these rules are removed | everything else stays up.</p>
- </details>
- <details>
- <summary>Can I update or remove my review?</summary>
- <p>Contact us and we'll update or remove your review within 48 hours. No questions asked.</p>
- </details>
- </div>
+ <p>Share your experience above and help others plan their trip.</p>
  </div>
  </section>
 
@@ -154,18 +123,100 @@
  <div>
  <h4>Experiences</h4>
  <a href="/yachts/">Yachts</a><a href="/boat-charters/">Boat Charters</a><a href="/dinner-cruises/">Dinner Cruises</a>
- <a href="/jet-ski/">Jet Ski</a><a href="/taxi/">Taxi & Tours</a><a href="/massage/">Massage</a><a href="/weather/">Weather</a>
+ <a href="/jet-ski/">Jet Ski</a><a href="/taxi/">Taxi & Tours</a><a href="/weather/">Weather</a>
  </div>
  <div>
  <h4>Company</h4>
  <a href="/reviews/">Reviews</a><a href="/weather/">Weather</a><a href="/about/">About</a><a href="/contact/">Contact</a>
- <span style="color:#e8c98a;font-weight:600;">Chat with us</span>
  </div>
  </div>
- <p class="footer-fine">© 2026 Bahamas Adventure Guides · All bookings handled by licensed Bahamian operators.</p>
+ <p class="footer-fine">&copy; 2026 Bahamas Adventure Guides · All bookings handled by licensed Bahamian operators.</p>
  </div>
  </footer>
 
-<script src="/widget.js"></script>
+<script>
+// Load and display reviews
+fetch('/api/reviews').then(function(r) { return r.json(); }).then(function(data) {
+  var list = document.getElementById('reviews-list');
+  var schema = document.getElementById('review-schema');
+  if (!data.reviews || data.reviews.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#888;"><p>No reviews yet. Be the first to share your experience.</p></div>';
+    return;
+  }
+  var html = '';
+  var totalRating = 0;
+  for (var i = 0; i < data.reviews.length; i++) {
+    var r = data.reviews[i];
+    totalRating += r.rating;
+    html += '<div style="background:#f9f8f5;border-radius:16px;padding:24px;margin-bottom:16px;">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">';
+    html += '<strong style="font-size:1.05rem;">' + r.name + '</strong>';
+    html += '<span style="color:#0a8aa8;font-weight:700;font-size:1.1rem;">' + r.rating + '/5</span>';
+    html += '</div>';
+    if (r.trip_type) {
+      html += '<div style="font-size:0.82rem;color:#888;margin-bottom:8px;">' + r.trip_type + '</div>';
+    }
+    html += '<p style="line-height:1.6;color:#333;">' + r.text + '</p>';
+    html += '<div style="font-size:0.78rem;color:#aaa;margin-top:12px;">' + new Date(r.created_at).toLocaleDateString() + '</div>';
+    html += '</div>';
+  }
+  var avg = (totalRating / data.reviews.length).toFixed(1);
+  html = '<div style="text-align:center;margin-bottom:32px;padding:20px;background:#f9f8f5;border-radius:16px;"><span style="font-size:2rem;font-weight:700;color:#0d2538;">' + avg + '</span><span style="color:#888;font-size:1rem;"> / 5 from ' + data.reviews.length + ' review' + (data.reviews.length !== 1 ? 's' : '') + '</span></div>' + html;
+  list.innerHTML = html;
+  
+  // Update schema
+  if (schema) {
+    var newSchema = JSON.parse(schema.textContent);
+    newSchema.aggregateRating.ratingValue = avg;
+    newSchema.aggregateRating.reviewCount = data.reviews.length;
+    schema.textContent = JSON.stringify(newSchema, null, 2);
+  }
+}).catch(function() {
+  document.getElementById('reviews-loading').textContent = 'Could not load reviews.';
+});
+
+// Submit review
+document.getElementById('rev-submit').onclick = function() {
+  var btn = this;
+  var name = document.getElementById('rev-name').value.trim();
+  var email = document.getElementById('rev-email').value.trim();
+  var rating = document.getElementById('rev-rating').value;
+  var text = document.getElementById('rev-text').value.trim();
+  var trip = document.getElementById('rev-trip').value.trim();
+  var status = document.getElementById('rev-status');
+  
+  if (!name) { status.textContent = 'Please enter your name.'; return; }
+  if (!text) { status.textContent = 'Please write a review.'; return; }
+  
+  btn.textContent = 'Submitting...';
+  btn.disabled = true;
+  
+  fetch('/api/reviews', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: name, email: email, rating: parseInt(rating), text: text, trip_type: trip })
+  }).then(function(r) { return r.json(); }).then(function(data) {
+    if (data.ok) {
+      status.textContent = 'Review submitted! Reloading...';
+      document.getElementById('rev-name').value = '';
+      document.getElementById('rev-email').value = '';
+      document.getElementById('rev-text').value = '';
+      document.getElementById('rev-trip').value = '';
+      // Reload reviews
+      location.reload();
+    } else {
+      status.textContent = 'Error: ' + (data.error || 'Could not submit');
+      btn.textContent = 'Submit Review';
+      btn.disabled = false;
+    }
+  }).catch(function() {
+    status.textContent = 'Error submitting review. Try again.';
+    btn.textContent = 'Submit Review';
+    btn.disabled = false;
+  });
+};
+</script>
+
+<script src="https://bahamas-chat-worker.117shadowwalker117.workers.dev/widget.js"></script>
 </body>
 </html>

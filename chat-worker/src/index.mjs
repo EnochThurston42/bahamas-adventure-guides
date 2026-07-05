@@ -322,7 +322,59 @@ export default {
       }
     }
 
-    // API: Reverse geocode (location sharing)
+
+    // API: Submit a review
+    if (request.method === 'POST' && path === '/api/reviews') {
+      try {
+        const body = await request.json();
+        const name = (body.name || 'Anonymous').trim().slice(0, 100);
+        const email = (body.email || '').trim().slice(0, 200);
+        const rating = parseInt(body.rating) || 5;
+        const text = (body.text || '').trim().slice(0, 2000);
+        const tripType = (body.trip_type || '').trim().slice(0, 100);
+        if (!text || rating < 1 || rating > 5) {
+          return json({ error: 'Text and rating (1-5) required' }, 400);
+        }
+        var reviewId = 'review:' + Date.now() + ':' + Math.random().toString(36).slice(2, 6);
+        var review = {
+          id: reviewId,
+          name: name,
+          email: email,
+          rating: rating,
+          text: text,
+          trip_type: tripType || null,
+          created_at: new Date().toISOString(),
+          verified: false
+        };
+        await env.CHAT_KV.put(reviewId, JSON.stringify(review));
+        return json({ ok: true, review: review });
+      } catch (err) {
+        return json({ error: err.message }, 500);
+      }
+    }
+
+    // API: Get reviews
+    if (request.method === 'GET' && path === '/api/reviews') {
+      try {
+        var all = await env.CHAT_KV.list({ prefix: 'review:', limit: 100 });
+        var reviews = [];
+        for (var key of all.keys) {
+          var raw = await env.CHAT_KV.get(key.name);
+          if (raw) {
+            try {
+              var r = JSON.parse(raw);
+              if (r.text) reviews.push(r);
+            } catch(e) {}
+          }
+        }
+        reviews.sort(function(a, b) { return (b.created_at || '').localeCompare(a.created_at || ''); });
+        return json({ reviews: reviews, count: reviews.length });
+      } catch (err) {
+        return json({ error: err.message }, 500);
+      }
+    }
+
+
     if (request.method === 'GET' && path === '/api/geocode') {
       const lat = url.searchParams.get('lat');
       const lon = url.searchParams.get('lon');
