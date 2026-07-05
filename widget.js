@@ -1,4 +1,19 @@
 
+
+// Error logging
+window.baghLog = function(msg, data) {
+  try {
+    var errData = { msg: msg, time: new Date().toISOString() };
+    if (data) errData.data = data;
+    console.error('[BAGH]', msg, data || '');
+    try {
+      var x = new XMLHttpRequest();
+      x.open('POST', '/api/error-log', true);
+      x.setRequestHeader('Content-Type', 'application/json');
+      x.send(JSON.stringify(errData));
+    } catch(e) {}
+  } catch(e) {}
+};
 (function() {
   'use strict';
   try {
@@ -580,5 +595,13 @@
   }
   } catch(e) {
     document.body.innerHTML += '<div style="position:fixed;top:0;left:0;right:0;background:red;color:#fff;padding:10px;z-index:99999;text-align:center;">Chat error: ' + e.message + '</div>';
+  }
+  } catch(e) {
+    window.baghLog('Widget error', e.message + ' | ' + (e.stack || '').substring(0,200));
+    var errDiv = document.createElement('div');
+    errDiv.style.cssText = 'position:fixed;bottom:200px;right:24px;z-index:99999;background:#e74c3c;color:#fff;padding:12px 20px;border-radius:12px;font-size:0.85rem;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,0.2);';
+    errDiv.textContent = 'Chat error: ' + e.message;
+    document.body.appendChild(errDiv);
+    setTimeout(function() { errDiv.remove(); }, 8000);
   }
 })();

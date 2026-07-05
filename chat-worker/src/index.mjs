@@ -309,6 +309,19 @@ export default {
       }
     }
 
+    // API: Error logging from widget
+    if (request.method === 'POST' && path === '/api/error-log') {
+      try {
+        const body = await request.json();
+        // Store in KV for debugging
+        var logKey = 'error:' + Date.now() + ':' + Math.random().toString(36).slice(2,6);
+        await env.CHAT_KV.put(logKey, JSON.stringify(body));
+        return json({ ok: true });
+      } catch(err) {
+        return json({ ok: false });
+      }
+    }
+
     // API: Reverse geocode (location sharing)
     if (request.method === 'GET' && path === '/api/geocode') {
       const lat = url.searchParams.get('lat');
