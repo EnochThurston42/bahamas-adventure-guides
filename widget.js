@@ -46,7 +46,7 @@
     '.bagh-dot--offline { background:#bbb;box-shadow:none; }',
     '.bagh-close { position:absolute;top:16px;right:20px;background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer;opacity:0.7;transition:opacity 0.2s; }',
     '.bagh-close:hover { opacity:1; }',
-    '.bagh-msgs { flex:1;min-height:0;overflow-y:scroll;padding:20px;display:flex;flex-direction:column;gap:12px;background:#f9f8f5;scrollbar-width:thin;scrollbar-color:#0a8aa8 #f9f8f5; }',
+    '.bagh-msgs { flex:1;min-height:0;height:0;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px;background:#f9f8f5;scrollbar-width:thin;scrollbar-color:#0a8aa8 #f9f8f5; }',
     '.bagh-msgs::-webkit-scrollbar { width:8px; }',
     '.bagh-msgs::-webkit-scrollbar-track { background:transparent; }',
     '.bagh-msgs::-webkit-scrollbar-thumb { background-color:#0a8aa8;border-radius:4px; }',
