@@ -938,6 +938,31 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
   let activeRoom = null;
   let pollTimer = null;
   let wsConnections = {}; // roomId -> WebSocket
+
+  function extractLocation(text) {
+    if (!text) return null;
+    var coordMatch = text.match(/(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/);
+    if (coordMatch) {
+      var lat = parseFloat(coordMatch[1]);
+      var lng = parseFloat(coordMatch[2]);
+      if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+        return { lat: lat, lng: lng };
+      }
+    }
+    return null;
+  }
+
+  function renderLocationMap(container, loc) {
+    if (!loc || !loc.lat || !loc.lng) return;
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'margin-top:8px;border-radius:10px;overflow:hidden;border:1px solid #e0ddd5;';
+    var iframe = document.createElement('iframe');
+    iframe.src = 'https://www.openstreetmap.org/export/embed.html?bbox=' + (loc.lng - 0.01) + ',' + (loc.lat - 0.01) + ',' + (loc.lng + 0.01) + ',' + (loc.lat + 0.01) + '&layer=mapnik&marker=' + loc.lat + ',' + loc.lng;
+    iframe.style.cssText = 'width:100%;height:200px;border:0;display:block;';
+    iframe.loading = 'lazy';
+    wrap.appendChild(iframe);
+    container.appendChild(wrap);
+  }
   let dashUploading = false;
 
   if (TOKEN) checkAuth();
@@ -1116,8 +1141,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     ws.onmessage = (e) => {
       const data = JSON.parse(e.data);
       if (data.type === 'message' && data.sender_role === 'visitor') {
-        // Trigger REST reload to get correct sender_name from server
-        loadMsgs();
+        // Check for duplicate before reloading
+        var exists = localMessages.some(function(m) { return m.id && data.id && m.id === data.id; });
+        if (!exists) {
+          loadMsgs();
+        }
       }
     };
     ws.onclose = () => { delete wsConnections[roomId]; };

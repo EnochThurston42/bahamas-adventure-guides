@@ -86,7 +86,7 @@
   chat.innerHTML = [
     '<button id="bagh-chat-btn" aria-label="Chat"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg></button>',
     '<div id="bagh-chat-panel">',
-    '<div class="bagh-hdr"><h3>Bahamas Adventure Guides</h3><p>Ask us anything</p><div class="bagh-status" id="bagh-status"><span class="bagh-dot bagh-dot--offline" id="bagh-dot"></span><span id="bagh-status-text">Reply within minutes</span></div><button id="bagh-clear-btn" style="background:none;border:none;color:#fff;font-size:0.75rem;opacity:0.7;cursor:pointer;position:absolute;bottom:12px;left:20px;padding:4px 8px;border-radius:4px;">Clear</button><button class="bagh-close" id="bagh-close">&times;</button></div>',
+    '<div class="bagh-hdr"><h3>Bahamas Adventure Guides</h3><p>Ask us anything</p><div class="bagh-status" id="bagh-status"><span class="bagh-dot bagh-dot--offline" id="bagh-dot"></span><span id="bagh-status-text">Reply within minutes</span></div><button id="bagh-clear-btn" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:0.72rem;cursor:pointer;position:absolute;top:18px;right:52px;padding:4px 10px;border-radius:6px;">Clear</button><button class="bagh-close" id="bagh-close">&times;</button></div>',
     '<div id="bagh-form" class="bagh-form"><h3>Start chatting</h3><p>Leave your name and we\'ll be right with you.</p><input type="text" id="bagh-name" placeholder="Your name" maxlength="100" /><button id="bagh-start">Start Chat</button></div>',
     '<div id="bagh-loading" class="bagh-loading" style="display:none">Connecting...</div>',
     '<div id="bagh-chat-view" style="display:none;flex-direction:column;flex:1"><div class="bagh-msgs" id="bagh-msgs"></div><div class="bagh-input"><button class="bagh-ico-btn" id="bagh-file-btn" title="Attach file">File</button><textarea id="bagh-input" placeholder="Type..." rows="1"></textarea><button class="bagh-ico-btn" id="bagh-loc-btn" title="Share location">Map</button><button id="bagh-send">Send</button></div></div>',
@@ -472,37 +472,76 @@
 
   // Location sharing
   locBtn.onclick = async () => {
-    const place = prompt('Enter a place name or coordinates (e.g. "Nassau Harbour" or "25.0780,-77.3389"):');
-    if (!place || !state.roomId) return;
-    const coordMatch = place.match(/(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/);
-    if (coordMatch) {
-      const lat = parseFloat(coordMatch[1]);
-      const lng = parseFloat(coordMatch[2]);
-      input.value = lat + ',' + lng;
-      sendMessage();
-    } else {
-      // Geocode via Nominatim
-      addMsg('visitor', 'You', 'Searching for ' + place + '...');
-      try {
-        const resp = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(place) + '&countrycodes=bs&limit=5&viewbox=-79.0,27.5,-71.0,20.5&bounded=1', {
-          headers: { 'User-Agent': 'BahamasAdventureGuides/1.0' }
-        });
-        const data = await resp.json();
-        if (data && data.length > 0) {
-          const lat = parseFloat(data[0].lat);
-          const lng = parseFloat(data[0].lon);
-          const displayName = data[0].display_name.split(',')[0];
-          input.value = displayName + ': ' + lat + ',' + lng;
-          // Replace the searching message
-          state.messages = state.messages.filter(m => m.content !== 'Searching for ' + place + '...');
+    if (!state.roomId) return;
+    // Try GPS first
+    if (navigator.geolocation) {
+      addMsg('system', '', 'Getting your GPS location...');
+      navigator.geolocation.getCurrentPosition(async function(pos) {
+        var lat = pos.coords.latitude;
+        var lng = pos.coords.longitude;
+        try {
+          var rev = await fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&zoom=14', {
+            headers: { 'User-Agent': 'BahamasAdventureGuides/1.0' }
+          });
+          var geo = await rev.json();
+          var placeName = (geo && geo.display_name) ? geo.display_name.split(',')[0] : 'Shared Location';
+          state.messages = state.messages.filter(function(m) { return m.content !== 'Getting your GPS location...'; });
+          input.value = placeName + ': ' + lat + ',' + lng;
+          sendMessage();
+        } catch(e) {
+          state.messages = state.messages.filter(function(m) { return m.content !== 'Getting your GPS location...'; });
+          input.value = lat + ',' + lng;
+          sendMessage();
+        }
+      }, function(err) {
+        state.messages = state.messages.filter(function(m) { return m.content !== 'Getting your GPS location...'; });
+        var place = prompt('Enter a place name or coordinates to share:');
+        if (!place) return;
+        var coordMatch = place.match(/(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/);
+        if (coordMatch) {
+          input.value = coordMatch[1] + ',' + coordMatch[2];
           sendMessage();
         } else {
-          state.messages = state.messages.filter(m => m.content !== 'Searching for ' + place + '...');
-          addMsg('system', '', 'Could not find that place. Try coordinates (e.g. 25.0780,-77.3389)');
+          addMsg('visitor', 'You', 'Searching for ' + place + '...');
+          fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(place) + '&countrycodes=bs&limit=5&viewbox=-79.0,27.5,-71.0,20.5&bounded=1', {
+            headers: { 'User-Agent': 'BahamasAdventureGuides/1.0' }
+          }).then(function(r) { return r.json(); }).then(function(data) {
+            state.messages = state.messages.filter(function(m) { return m.content !== 'Searching for ' + place + '...'; });
+            if (data && data.length > 0) {
+              var lat = parseFloat(data[0].lat);
+              var lng = parseFloat(data[0].lon);
+              var displayName = data[0].display_name.split(',')[0];
+              input.value = displayName + ': ' + lat + ',' + lng;
+              sendMessage();
+            } else {
+              addMsg('system', '', 'Could not find that place.');
+            }
+          });
         }
-      } catch {
-        state.messages = state.messages.filter(m => m.content !== 'Searching for ' + place + '...');
-        addMsg('system', '', 'Location search failed. Try coordinates (e.g. 25.0780,-77.3389)');
+      }, { enableHighAccuracy: true, timeout: 10000 });
+    } else {
+      var place = prompt('Enter a place name or coordinates to share:');
+      if (!place) return;
+      var coordMatch = place.match(/(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/);
+      if (coordMatch) {
+        input.value = coordMatch[1] + ',' + coordMatch[2];
+        sendMessage();
+      } else {
+        addMsg('visitor', 'You', 'Searching for ' + place + '...');
+        fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(place) + '&countrycodes=bs&limit=5&viewbox=-79.0,27.5,-71.0,20.5&bounded=1', {
+          headers: { 'User-Agent': 'BahamasAdventureGuides/1.0' }
+        }).then(function(r) { return r.json(); }).then(function(data) {
+          state.messages = state.messages.filter(function(m) { return m.content !== 'Searching for ' + place + '...'; });
+          if (data && data.length > 0) {
+            var lat = parseFloat(data[0].lat);
+            var lng = parseFloat(data[0].lon);
+            var displayName = data[0].display_name.split(',')[0];
+            input.value = displayName + ': ' + lat + ',' + lng;
+            sendMessage();
+          } else {
+            addMsg('system', '', 'Could not find that place.');
+          }
+        });
       }
     }
   };
