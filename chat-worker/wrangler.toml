@@ -26,13 +26,11 @@ bucket_name = "bahamas-chat-uploads"
 binding = "CHAT_KV"
 id = "ac5cf9d8b6fd46f5854dc421124aaf08"
 
-# Environment variables for agent auth
+# Non-secret vars only.
+# AGENT_USERNAME, AGENT_PASSWORD, AGENT_TOKEN are set via `wrangler secret put`.
 [vars]
-AGENT_USERNAME = "admin"
-AGENT_PASSWORD = ""
-AGENT_TOKEN = ""
 AGENT_NAME = "Adventure Guide Agent"
 
 # Deploy as a Worker that routes on the pages.dev subdomain
 [env.production]
-routes = [{ pattern = "chat.bahamas-adventure-guides.pages.dev/*", zone_id = "" }]
+routes = [{ pattern = "chat.bahamas-adventure-guides.pages.dev/*" }]

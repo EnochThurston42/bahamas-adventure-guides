@@ -1060,7 +1060,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
   }
 
   function headers() {
-    return { 'Authorization': 'Bearer ' + '' };
+    // Auth handled via HttpOnly cookie (bagh_session) set on login
+    return {};
   }
 
   async function load() {
