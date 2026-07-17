@@ -1,6 +1,15 @@
+/
+  Cache-Control: no-cache, no-store, must-revalidate, private
+  Pragma: no-cache
+
 /*.html
-  Cache-Control: no-cache, no-store, must-revalidate
+  Cache-Control: no-cache, no-store, must-revalidate, private
+  Pragma: no-cache
+
 /*.js
-  Cache-Control: no-cache, no-store, must-revalidate
+  Cache-Control: no-cache, no-store, must-revalidate, private
+  Pragma: no-cache
+
 /*.css
-  Cache-Control: no-cache, no-store, must-revalidate
+  Cache-Control: no-cache, no-store, must-revalidate, private
+  Pragma: no-cache
