@@ -84,7 +84,7 @@ window.baghLog = function(msg, data) {
     '.bagh-file-link { display:block;font-size:0.82rem;color:#0a8aa8;text-decoration:underline;margin-top:6px; }',
     '.bagh-map-wrap { margin-top:6px;border-radius:10px;overflow:hidden;border:1px solid #e0ddd5; }',
     '.bagh-map-wrap iframe { width:100%;height:200px;border:0;display:block; }',
-    '.bagh-form { padding:32px 24px;display:flex;flex-direction:column;gap:14px;flex:1;justify-content:center; }',
+    '.bagh-form { padding:32px 24px;display:flex;flex-direction:column;gap:14px;flex:1;justify-content:center;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#0a8aa8 #e8e4de; }',
     '.bagh-form h3 { margin:0;font-size:1.15rem;color:#0d2538;font-weight:700;letter-spacing:-0.01em; }',
     '.bagh-form p { margin:0 0 14px;color:#666;font-size:0.88rem;line-height:1.5; }',
     '.bagh-form input { padding:13px 16px;border:1.5px solid #e0ddd5;border-radius:12px;font-size:0.94rem;outline:none;background:#fbf8f2;color:#1a1a1a;transition:border-color 0.2s,background 0.2s,box-shadow 0.2s;width:100%;font-family:inherit; }',
